@@ -31,6 +31,8 @@ int main(int argc, char** argv)
 			ROS_INFO("x = %.2f", x);
 			
 			twist.linear.x = x * speed;
+			
+			//TODO: calculate area then give value to move back and forth. or left and right
 			twist.linear.y = 0;
 			twist.linear.z = 0;
 			
