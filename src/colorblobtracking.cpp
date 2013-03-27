@@ -6,6 +6,8 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/Float32.h"
 
+#include <string.h>
+
 /**
  * //TODO
  * - make everything standardized CPP!
@@ -32,6 +34,11 @@ int main(int argc, char** argv)
 		ROS_INFO("Opening webcam");
 	}
 	
+	ROS_INFO("To display image, use option \"-d\"");
+	bool displayWindows = false;
+	if (argv[1] && strcmp(argv[1], "-d") == 0)
+		displayWindows = true;
+	
 	// ROS MESSAGE BEGIN
 	// Ref: http://www.ros.org/wiki/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
 	ros::init(argc, argv, "object_tracking_node");
@@ -46,11 +53,13 @@ int main(int argc, char** argv)
 	int capSizeX = 640;
 	int capSizeY = 480;
 	
-	namedWindow("Webcam", CV_WINDOW_AUTOSIZE);
-	namedWindow("Output", CV_WINDOW_AUTOSIZE);
-	moveWindow("Webcam", 0*capSizeX, 0);
-	moveWindow("Output", 1*capSizeX, 0);
-	
+	if (displayWindows){
+		namedWindow("Webcam", CV_WINDOW_AUTOSIZE);
+		namedWindow("Output", CV_WINDOW_AUTOSIZE);
+		moveWindow("Webcam", 0*capSizeX, 0);
+		moveWindow("Output", 1*capSizeX, 0);
+	}
+
 	// HSV max and min values in opencv
 	//int lo_h = 0, lo_s = 0, lo_v = 0, hi_h = 180, hi_s = 255, hi_v = 255;
 	// this is for green
@@ -126,8 +135,10 @@ int main(int argc, char** argv)
 		}
 		// GETTING THE CENTROID END
 		
-		imshow("Output", threshMat);
-		imshow("Webcam", srcMat);
+		if (displayWindows){
+			imshow("Output", threshMat);
+			imshow("Webcam", srcMat);
+		}
 		// CONTOUR TEST PART2 END
 				
 		// ROS MESSAGE BEGIN
@@ -154,7 +165,8 @@ int main(int argc, char** argv)
 	}
 	
 	cvReleaseCapture(&capture);
-	destroyAllWindows();
+	if (displayWindows)
+		destroyAllWindows();
 	
 	return 0;
 }
