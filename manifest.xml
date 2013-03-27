@@ -1,0 +1,17 @@
+<package>
+  <description brief="youbot_object_tracking">
+
+     youbot_object_tracking
+
+  </description>
+  <author>Ariandy Yoga Benggolo</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/youbot_object_tracking</url>
+  <depend package="roscpp"/>
+  <depend package="opencv2"/>
+  <depend package="std_msgs"/>
+
+</package>
+
+
