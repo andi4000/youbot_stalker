@@ -18,25 +18,38 @@ int main(int argc, char** argv)
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 	
 	geometry_msgs::Twist twist;
+	float x, y;
+	float speed = 0.1;
 	
 	while(n.ok()){
 		if (yb->isObjectDetected()){
-			ROS_INFO("(x, y) = (%d, %d)", yb->getObjX(), yb->getObjY());
-			ROS_INFO("area   = %.2f", yb->getObjArea());
+			//ROS_INFO("(x, y) = (%d, %d)", yb->getObjX(), yb->getObjY());
+			//ROS_INFO("area   = %.2f", yb->getObjArea());
+			
+			
+			//TODO: convert camera x y values into youbot's angular speed
+			x = (float)yb->getObjX()/320;
+			ROS_INFO("x = %.2f", x);
+			twist.linear.x = x * speed;
+			twist.linear.y = 0;
+			twist.linear.z = 0;
+			
+			twist.angular.x = 0;
+			twist.angular.y = 0;
+			twist.angular.z = 0;
 		} else {
+			twist.linear.x = 0;
+			twist.linear.y = 0;
+			twist.linear.z = 0;
+			
+			twist.angular.x = 0;
+			twist.angular.y = 0;
+			twist.angular.z = 0;
+			
 			ROS_INFO("nothing");
 		}
 		
-		twist.linear.x = yb->getObjX();
-		twist.linear.y = yb->getObjY();
-		twist.linear.z = 0;
-		
-		twist.angular.x = 0;
-		twist.angular.y = 0;
-		twist.angular.z = 0;
-		
 		pub_moveit.publish(twist);
-		//TODO: put controller here
 		
 		ros::spinOnce();
 		r.sleep();
