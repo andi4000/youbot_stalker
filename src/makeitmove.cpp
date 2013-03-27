@@ -26,10 +26,10 @@ int main(int argc, char** argv)
 			//ROS_INFO("(x, y) = (%d, %d)", yb->getObjX(), yb->getObjY());
 			//ROS_INFO("area   = %.2f", yb->getObjArea());
 			
-			
 			//TODO: convert camera x y values into youbot's angular speed
 			x = (float)yb->getObjX()/320;
 			ROS_INFO("x = %.2f", x);
+			
 			twist.linear.x = x * speed;
 			twist.linear.y = 0;
 			twist.linear.z = 0;

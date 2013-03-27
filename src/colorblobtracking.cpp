@@ -12,6 +12,7 @@
  * //TODO
  * - make everything standardized CPP!
  * - put everything into modular functions!
+ * - develop better image recognition!!
  * 
  * things that are still in C
  * - getHSVThresholdedImg function
