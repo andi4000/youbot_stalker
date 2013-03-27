@@ -22,7 +22,9 @@ int main(int argc, char** argv)
 			ROS_INFO("area   = %.2f", yb->getObjArea());
 		} else {
 			ROS_INFO("nothing");
-		}		
+		}
+		
+		//TODO: put controller here
 		
 		ros::spinOnce();
 		r.sleep();
