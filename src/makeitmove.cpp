@@ -15,6 +15,9 @@ int main(int argc, char** argv)
 	ros::Subscriber sub_area = n.subscribe("object_tracking/area", 1000, &YoubotController::callbackArea, yb);
 	ros::Rate r(50);
 	
+	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+	
+	geometry_msgs::Twist twist;
 	
 	while(n.ok()){
 		if (yb->isObjectDetected()){
@@ -24,6 +27,15 @@ int main(int argc, char** argv)
 			ROS_INFO("nothing");
 		}
 		
+		twist.linear.x = yb->getObjX();
+		twist.linear.y = yb->getObjY();
+		twist.linear.z = 0;
+		
+		twist.angular.x = 0;
+		twist.angular.y = 0;
+		twist.angular.z = 0;
+		
+		pub_moveit.publish(twist);
 		//TODO: put controller here
 		
 		ros::spinOnce();

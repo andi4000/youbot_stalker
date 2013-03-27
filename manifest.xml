@@ -12,6 +12,11 @@
   <depend package="opencv2"/>
   <depend package="std_msgs"/>
 
+  <!-- for youbot access -->
+  <depend package="geometry_msgs"/>
+  <depend package="youbot_driver"/>
+  <depend package="youbot_oodl"/>
+
 </package>
 
 
