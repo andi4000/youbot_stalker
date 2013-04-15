@@ -91,6 +91,30 @@ void doContourProcessing(const Mat& matSrc, const Mat& matThresh, Point& out_cen
 	out_mat = matOutput;
 }
 
+//Ref: http://opencv.willowgarage.com/documentation/cpp/imgproc_feature_detection.html#cv-houghcircles
+void doGetTheBall(const Mat& matSrc, Mat& out_mat)
+{
+	//Mat matOutput(matSrc);
+	Mat gray;
+	if (matSrc.channels() > 1)
+		cvtColor(matSrc, gray, CV_BGR2GRAY);
+	else
+		gray = matSrc;
+	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
+	vector<Vec3f> circles;
+	HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 2, gray.rows/4, 200, 100);
+	
+	for (size_t i = 0; i < circles.size(); i++){
+		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+		int radius = cvRound(circles[i][2]);
+		
+		circle(out_mat, center, 3, Scalar(0, 0, 255), -1, 8, 0);
+		circle(out_mat, center, radius, Scalar(0, 0, 255), 3, 8, 0);
+	}
+	
+	//out_mat = matOutput;
+}
+
 int main(int argc, char** argv)
 {
 	
@@ -162,13 +186,15 @@ int main(int argc, char** argv)
 		Mat matThresh;
 		matThresh = getHSVThresholdedImg(srcFrame, lo_h, lo_s, lo_v, hi_h, hi_s, hi_v);
 		
-		Mat matOutput;
+		Mat matOutput(srcFrame);
 		Point relative_centroid(0, 0);
 		double max_area;
 		bool got_it;
 		
-		doContourProcessing(srcFrame, matThresh, relative_centroid, got_it, max_area, matOutput); 
-	
+		//TODO: object detection call here
+		//doContourProcessing(srcFrame, matThresh, relative_centroid, got_it, max_area, matOutput); 
+		//doGetTheBall(matThresh, matOutput);
+		
 		if (displayWindows){
 			imshow("Output", matOutput);
 			imshow("Threshold", matThresh);
