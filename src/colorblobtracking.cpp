@@ -10,29 +10,48 @@
 
 /**
  * //TODO
- * - make everything standardized CPP!
  * - put everything into modular functions!
  * - develop better image recognition!!
  * 
- * things that are still in C
- * - getHSVThresholdedImg function
- * - camera capture
  */
-
-IplImage* getHSVThresholdedImg(IplImage* img, int lo_h, int lo_s, int lo_v, int hi_h, int hi_s, int hi_v);
 
 using namespace cv;
 using namespace std;
 
+Mat getHSVThresholdedImg(const Mat& src, int lo_h, int lo_s, int lo_v, int hi_h, int hi_s, int hi_v)
+{
+	Mat matHSV;
+	cvtColor(src, matHSV, CV_BGR2HSV);
+	
+	Mat matThresh;
+	inRange(matHSV, Scalar(lo_h, lo_s, lo_v), Scalar(hi_h, hi_s, hi_v), matThresh);
+	
+	erode(matThresh, matThresh, Mat());
+	
+	return matThresh;
+}
+
 int main(int argc, char** argv)
 {
-	CvCapture* capture = cvCaptureFromCAM(0);
 	
-	if (!capture) {
-		ROS_ERROR("Failed to open camera!");
-		return 1;
+	int camIndex = 0;
+	for (int i = 0; i < 5; i++){
+		VideoCapture tmpCap(i);
+		if (tmpCap.isOpened()){
+			camIndex = i;
+			tmpCap.release();
+			ROS_INFO("Using /dev/video%d", camIndex);
+			break;
+		}
+		tmpCap.release();
+	}
+	VideoCapture cap(camIndex);
+	
+	if (!cap.isOpened()){
+		ROS_ERROR("Failed to open camera at /dev/video%d", camIndex);
+		return -1;
 	} else {
-		ROS_INFO("Opening webcam");
+		ROS_INFO("Opening /dev/video%d", camIndex);
 	}
 	
 	ROS_INFO("To display image, use option \"-d\"");
@@ -75,21 +94,19 @@ int main(int argc, char** argv)
 	
 	// ROS SIGINT handler
 	while(ros::ok()){
-		IplImage* srcImg = cvQueryFrame(capture);
-		if (!srcImg) {
-			ROS_ERROR("Failed to get frame from camera!");
-			return 1;			
-		}
-
-		IplImage* threshImg = getHSVThresholdedImg(srcImg, lo_h, lo_s, lo_v, hi_h, hi_s, hi_v);
+		Mat srcFrame;
+		cap >> srcFrame;
+		resize(srcFrame, srcFrame, Size(capSizeX, capSizeY));
 		
+		Mat matThresh;
+		matThresh = getHSVThresholdedImg(srcFrame, lo_h, lo_s, lo_v, hi_h, hi_s, hi_v);
 		// CONTOUR TEST PART2 BEGIN
 		// source: http://www.bytefish.de/blog/extracting_contours_with_opencv
-		Mat threshMat(threshImg);
-		Mat srcMat(srcImg);
+		//Mat threshMat(threshImg);
+		//Mat srcMat(srcImg);
 		
 		vector< vector<Point> > contours;
-		findContours(threshMat, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+		findContours(matThresh, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 		
 		vector<double> areas(contours.size());
 		for (unsigned int i = 0; i < contours.size(); i++)
@@ -108,7 +125,7 @@ int main(int argc, char** argv)
 		else
 			ROS_INFO("nothing");
 		// draw only the biggest contour
-		drawContours(srcMat, contours, maxPosition.y, Scalar(0, 0, 255), CV_FILLED);
+		drawContours(srcFrame, contours, maxPosition.y, Scalar(0, 0, 255), CV_FILLED);
 		
 		// GETTING THE CENTROID BEGIN
 		Point image_centroid(0, 0);
@@ -126,7 +143,7 @@ int main(int argc, char** argv)
 			
 			// draw the centroid of the biggest contour
 			image_centroid = mc[maxPosition.y];
-			circle(srcMat, image_centroid, 4, Scalar(255, 0, 0), -1, 8, 0);
+			circle(srcFrame, image_centroid, 4, Scalar(255, 0, 0), -1, 8, 0);
 			//ROS_INFO("image centroid (x, y) = (%d, %d)", image_centroid.x, image_centroid.y);
 			
 			// getting the relative centroid (middle point as 0,0)
@@ -137,8 +154,8 @@ int main(int argc, char** argv)
 		// GETTING THE CENTROID END
 		
 		if (displayWindows){
-			imshow("Output", threshMat);
-			imshow("Webcam", srcMat);
+			imshow("Output", matThresh);
+			imshow("Webcam", srcFrame);
 		}
 		// CONTOUR TEST PART2 END
 				
@@ -165,24 +182,11 @@ int main(int argc, char** argv)
 		if ( (waitKey(10) & 255) == 27 ) break;
 	}
 	
-	cvReleaseCapture(&capture);
+	//cvReleaseCapture(&capture);
 	if (displayWindows)
 		destroyAllWindows();
 	
 	return 0;
 }
 
-// Ref: http://www.aishack.in/2010/07/tracking-colored-objects-in-opencv/
-IplImage* getHSVThresholdedImg(IplImage* img, int lo_h, int lo_s, int lo_v, int hi_h, int hi_s, int hi_v)
-{
-	IplImage* imgHSV = cvCreateImage(cvGetSize(img), 8, 3);
-	cvCvtColor(img, imgHSV, CV_BGR2HSV);
-	
-	IplImage* imgThresh = cvCreateImage(cvGetSize(img), 8, 1);
-	cvInRangeS(imgHSV, cvScalar(lo_h, lo_s, lo_v), cvScalar(hi_h, hi_s, hi_v), imgThresh);
-	
-	cvErode(imgThresh, imgThresh);
-	
-	cvReleaseImage(&imgHSV);
-	return imgThresh;
-}
+
