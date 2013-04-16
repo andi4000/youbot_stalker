@@ -32,5 +32,5 @@ rosbuild_add_executable(colorblobtracking src/colorblobtracking.cpp)
 rosbuild_add_executable(3dcamtracking src/3dcamtracking.cpp)
 rosbuild_add_executable(makeitmove 
 	src/makeitmove.cpp
-	src/youbotController.h
-	src/youbotController.cpp)
+	src/youBotIOHandler.h
+	src/youBotIOHandler.cpp)

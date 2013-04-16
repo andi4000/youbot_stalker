@@ -6,11 +6,11 @@
 
 #include "geometry_msgs/Twist.h"
 
-class YoubotController
+class YouBotIOHandler
 {
 	public:
-		YoubotController();
-		~YoubotController();
+		YouBotIOHandler();
+		~YouBotIOHandler();
 		
 		void callbackObjDetected(const std_msgs::Bool::ConstPtr& msg);
 		void callbackPosX(const std_msgs::Int32::ConstPtr& msg);
@@ -22,8 +22,11 @@ class YoubotController
 		int getObjY();
 		double getObjArea();
 		
+		geometry_msgs::Twist twist;
+		void publishTwist(ros::Publisher* pub);
+
 	private:
-		bool camObjDetected;
-		int camPosX, camPosY;
-		double camArea;
+		bool m_camObjDetected;
+		int m_camPosX, m_camPosY;
+		double m_camArea;
 };

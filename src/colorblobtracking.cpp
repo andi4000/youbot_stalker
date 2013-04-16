@@ -10,6 +10,7 @@
 
 /**
  * //TODO
+ * - use ros::NodeHandle::setParam to send resolution information to parameter server
  * - develop better image recognition!!
  * - use getopt for better flag handling
  * 
