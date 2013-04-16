@@ -185,6 +185,8 @@ int main(int argc, char** argv)
 		
 		Mat matThresh;
 		matThresh = getHSVThresholdedImg(srcFrame, lo_h, lo_s, lo_v, hi_h, hi_s, hi_v);
+		dilate(matThresh, matThresh, Mat());
+		erode(matThresh, matThresh, Mat());
 		
 		Mat matOutput(srcFrame);
 		Point relative_centroid(0, 0);
@@ -192,7 +194,7 @@ int main(int argc, char** argv)
 		bool got_it;
 		
 		//TODO: object detection call here
-		//doContourProcessing(srcFrame, matThresh, relative_centroid, got_it, max_area, matOutput); 
+		doContourProcessing(srcFrame, matThresh, relative_centroid, got_it, max_area, matOutput); 
 		//doGetTheBall(matThresh, matOutput);
 		
 		if (displayWindows){
