@@ -55,21 +55,24 @@ int main(int argc, char** argv)
 		
 		ros::spinOnce();
 		r.sleep();
+		
+		// have to make robot stop before quitting
+		//TODO: is this the correct way?
+		if (ros::isShuttingDown()) {
+			twist.linear.x = 0;
+			twist.linear.y = 0;
+			twist.linear.z = 0;
+			twist.angular.x = 0;
+			twist.angular.y = 0;
+			twist.angular.z = 0;
+
+			ROS_INFO("Quitting...");
+			pub_moveit.publish(twist);
+			ros::spinOnce();
+			r.sleep();			
+		}
 	}
 	
-	// have to make robot stop before quitting
-	//TODO: is this the correct way?
-	twist.linear.x = 0;
-	twist.linear.y = 0;
-	twist.linear.z = 0;
-	twist.angular.x = 0;
-	twist.angular.y = 0;
-	twist.angular.z = 0;
-	
-	ROS_INFO("Quitting...");
-	pub_moveit.publish(twist);
-	ros::spinOnce();
-	r.sleep();
 	
 	return 0;
 }
