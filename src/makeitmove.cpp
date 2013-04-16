@@ -3,6 +3,7 @@
 /**
  * //TODO:
  * - safe shutdown (send all zero to cmd_vel)
+ * - Ref: http://answers.ros.org/question/27655/what-is-the-correct-way-to-do-stuff-before-a-node-is-shutdown/
  * 
  * 
  */
@@ -21,7 +22,6 @@ int main(int argc, char** argv)
 	
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 	
-	//geometry_msgs::Twist twist;
 	float x, y;
 	float speed = 0.3;
 	
@@ -39,7 +39,8 @@ int main(int argc, char** argv)
 			//TODO: calculate area then give value to move back and forth. or left and right
 
 			yb->m_twist.linear.x = 0;
-			yb->m_twist.linear.y = x * speed;
+			//yb->m_twist.linear.y = x * speed;
+			yb->m_twist.linear.y = 0;
 			yb->m_twist.linear.z = 0;
 			
 			yb->m_twist.angular.x = 0;
@@ -51,29 +52,11 @@ int main(int argc, char** argv)
 			ROS_INFO("nothing");
 		}
 		
-		//pub_moveit.publish(twist);
 		yb->publishTwist(&pub_moveit);
 		
 		ros::spinOnce();
 		r.sleep();
 		
-		/**
-		// have to make robot stop before quitting
-		//TODO: is this the correct way?
-		if (ros::isShuttingDown()) {
-			twist.linear.x = 0;
-			twist.linear.y = 0;
-			twist.linear.z = 0;
-			twist.angular.x = 0;
-			twist.angular.y = 0;
-			twist.angular.z = 0;
-
-			ROS_INFO("Quitting...");
-			pub_moveit.publish(twist);
-			ros::spinOnce();
-			r.sleep();			
-		}
-		*/
 	}
 	
 	
