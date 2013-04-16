@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 	float x, y;
 	float speed = 0.3;
 	
-	while(n.ok()){
+	while(n.ok() && ros::ok()){
 		if (yb->isObjectDetected()){
 			//ROS_INFO("(x, y) = (%d, %d)", yb->getObjX(), yb->getObjY());
 			//ROS_INFO("area   = %.2f", yb->getObjArea());
