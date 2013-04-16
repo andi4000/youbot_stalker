@@ -22,7 +22,8 @@ class YouBotIOHandler
 		int getObjY();
 		double getObjArea();
 		
-		geometry_msgs::Twist twist;
+		geometry_msgs::Twist m_twist;
+		void setTwistToZeroes();
 		void publishTwist(ros::Publisher* pub);
 
 	private:

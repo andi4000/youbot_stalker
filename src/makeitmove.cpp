@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 	
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 	
-	geometry_msgs::Twist twist;
+	//geometry_msgs::Twist twist;
 	float x, y;
 	float speed = 0.3;
 	
@@ -38,30 +38,26 @@ int main(int argc, char** argv)
 			
 			//TODO: calculate area then give value to move back and forth. or left and right
 
-			twist.linear.x = 0;
-			twist.linear.y = x * speed;
-			twist.linear.z = 0;
+			yb->m_twist.linear.x = 0;
+			yb->m_twist.linear.y = x * speed;
+			yb->m_twist.linear.z = 0;
 			
-			twist.angular.x = 0;
-			twist.angular.y = 0;
-			twist.angular.z = x * speed;
+			yb->m_twist.angular.x = 0;
+			yb->m_twist.angular.y = 0;
+			yb->m_twist.angular.z = x * speed;
 		} else {
-			twist.linear.x = 0;
-			twist.linear.y = 0;
-			twist.linear.z = 0;
-			
-			twist.angular.x = 0;
-			twist.angular.y = 0;
-			twist.angular.z = 0;
+			yb->setTwistToZeroes();
 			
 			ROS_INFO("nothing");
 		}
 		
-		pub_moveit.publish(twist);
+		//pub_moveit.publish(twist);
+		yb->publishTwist(&pub_moveit);
 		
 		ros::spinOnce();
 		r.sleep();
 		
+		/**
 		// have to make robot stop before quitting
 		//TODO: is this the correct way?
 		if (ros::isShuttingDown()) {
@@ -77,6 +73,7 @@ int main(int argc, char** argv)
 			ros::spinOnce();
 			r.sleep();			
 		}
+		*/
 	}
 	
 	

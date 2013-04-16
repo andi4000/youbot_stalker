@@ -7,21 +7,21 @@ YouBotIOHandler::YouBotIOHandler()
 	m_camPosY = 0;
 	m_camArea = 0;
 	
-	twist.linear.x = 0;
-	twist.linear.y = 0;
-	twist.linear.z = 0;
-	twist.angular.x = 0;
-	twist.angular.y = 0;
-	twist.angular.z = 0;
+	m_twist.linear.x = 0;
+	m_twist.linear.y = 0;
+	m_twist.linear.z = 0;
+	m_twist.angular.x = 0;
+	m_twist.angular.y = 0;
+	m_twist.angular.z = 0;
 }
 
 YouBotIOHandler::~YouBotIOHandler(){
-	twist.linear.x = 0;
-	twist.linear.y = 0;
-	twist.linear.z = 0;
-	twist.angular.x = 0;
-	twist.angular.y = 0;
-	twist.angular.z = 0;
+	m_twist.linear.x = 0;
+	m_twist.linear.y = 0;
+	m_twist.linear.z = 0;
+	m_twist.angular.x = 0;
+	m_twist.angular.y = 0;
+	m_twist.angular.z = 0;
 	
 }
 
@@ -51,6 +51,15 @@ double YouBotIOHandler::getObjArea(){
 	return m_camArea;
 }
 
+void YouBotIOHandler::setTwistToZeroes(){
+	m_twist.linear.x = 0;
+	m_twist.linear.y = 0;
+	m_twist.linear.z = 0;
+	m_twist.angular.x = 0;
+	m_twist.angular.y = 0;
+	m_twist.angular.z = 0;
+}
+
 void YouBotIOHandler::publishTwist(ros::Publisher* pub){
-	pub->publish(twist);
+	pub->publish(m_twist);
 }
