@@ -30,15 +30,15 @@ int main(int argc, char** argv)
 			x = (float)yb->getObjX()/320;
 			ROS_INFO("x = %.2f", x);
 			
-			twist.linear.x = x * speed;
-			
 			//TODO: calculate area then give value to move back and forth. or left and right
-			twist.linear.y = 0;
+
+			twist.linear.x = 0;
+			twist.linear.y = x * speed;
 			twist.linear.z = 0;
 			
 			twist.angular.x = 0;
 			twist.angular.y = 0;
-			twist.angular.z = 0;
+			twist.angular.z = x * speed;
 		} else {
 			twist.linear.x = 0;
 			twist.linear.y = 0;
