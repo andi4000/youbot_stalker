@@ -11,11 +11,15 @@
 /**
  * //TODO
  * - develop better image recognition!!
+ * - use getopt for better flag handling
  * 
  */
 
 using namespace cv;
 using namespace std;
+
+bool displayWindows = false;
+bool verbose = false;
 
 Mat getHSVThresholdedImg(const Mat& src, int lo_h, int lo_s, int lo_v, int hi_h, int hi_s, int hi_v)
 {
@@ -50,11 +54,6 @@ void doContourProcessing(const Mat& matSrc, const Mat& matThresh, Point& out_cen
 	bool got_it = false;
 	if (max_area > minimalArea) got_it = true;
 	
-	if (got_it)
-		ROS_INFO("got it");
-	else
-		ROS_INFO("nothing");
-		
 	// draw only the biggest contour
 	drawContours(matOutput, contours, maxPosition.y, Scalar(0, 0, 255), CV_FILLED);
 	
@@ -80,7 +79,11 @@ void doContourProcessing(const Mat& matSrc, const Mat& matThresh, Point& out_cen
 		// getting the relative centroid (middle point as 0,0)
 		relative_centroid.x = image_centroid.x - (matSrc.cols / 2);
 		relative_centroid.y = -image_centroid.y + (matSrc.rows / 2);
-		ROS_INFO("relative centroid (x, y) = (%d, %d) area %.2f", relative_centroid.x, relative_centroid.y, max_area);
+		if (verbose)
+			ROS_INFO("relative centroid (x, y) = (%d, %d) area %.2f", relative_centroid.x, relative_centroid.y, max_area);
+	} else {
+		if (verbose)
+			ROS_INFO("nothing");
 	}
 	// GETTING THE CENTROID END
 	
@@ -117,7 +120,6 @@ void doGetTheBall(const Mat& matSrc, Mat& out_mat)
 
 int main(int argc, char** argv)
 {
-	
 	int camIndex = 0;
 	for (int i = 0; i < 5; i++){
 		VideoCapture tmpCap(i);
@@ -138,7 +140,6 @@ int main(int argc, char** argv)
 		ROS_INFO("Opening /dev/video%d", camIndex);
 	}
 	
-	bool displayWindows = false;
 	if (argv[1] && strcmp(argv[1], "-d") == 0)
 		displayWindows = true;
 	else
@@ -177,6 +178,7 @@ int main(int argc, char** argv)
 	createTrackbar("Hi V", "Threshold", &hi_v, 255);
 	
 	
+	ROS_INFO("Starting object detection");
 	// ROS SIGINT handler
 	while(ros::ok()){
 		Mat srcFrame;
