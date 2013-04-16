@@ -4,7 +4,7 @@
  * //TODO:
  * - safe shutdown (send all zero to cmd_vel)
  * - Ref: http://answers.ros.org/question/27655/what-is-the-correct-way-to-do-stuff-before-a-node-is-shutdown/
- * 
+ * - PID visual control
  * 
  */
 int main(int argc, char** argv)
@@ -22,30 +22,27 @@ int main(int argc, char** argv)
 	
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 	
-	float x, y;
+	float cam_x, cam_y, cam_area;
 	float speed = 0.3;
 	
 	while(n.ok() && ros::ok()){
 		if (yb->isObjectDetected()){
-			//ROS_INFO("(x, y) = (%d, %d)", yb->getObjX(), yb->getObjY());
-			//ROS_INFO("area   = %.2f", yb->getObjArea());
 			
 			//TODO: convert camera x y values into youbot's angular speed
 			//TODO: make this 320x240 values into variables or ROS Parameter
-			x = (float)yb->getObjX()/320;
-			y = (float)yb->getObjY()/240;
-			ROS_INFO("x = %.2f", x);
+			cam_x = (float)yb->getObjX()/320;
+			cam_y = (float)yb->getObjY()/240;
+			cam_area = (float)yb->getObjArea();
+			ROS_INFO("x = %.2f", cam_x);
 			
-			//TODO: calculate area then give value to move back and forth. or left and right
-
 			yb->m_twist.linear.x = 0;
-			//yb->m_twist.linear.y = x * speed;
+			//yb->m_twist.linear.y = cam_x * speed;
 			yb->m_twist.linear.y = 0;
 			yb->m_twist.linear.z = 0;
 			
 			yb->m_twist.angular.x = 0;
 			yb->m_twist.angular.y = 0;
-			yb->m_twist.angular.z = x * speed;
+			yb->m_twist.angular.z = -cam_x * speed;
 		} else {
 			yb->setTwistToZeroes();
 			
