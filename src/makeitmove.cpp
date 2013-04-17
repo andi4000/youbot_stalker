@@ -52,6 +52,7 @@ int main(int argc, char** argv)
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 	
 	float cam_x, cam_y, cam_area;
+	float out_lin_y;
 	float speed = 0.3;
 	
 	while(n.ok() && ros::ok()){
@@ -59,20 +60,11 @@ int main(int argc, char** argv)
 			cam_x = (float)yb->getObjX()/320;
 			cam_y = (float)yb->getObjY()/240;
 			cam_area = (float)yb->getObjArea();
-			ROS_INFO("x = %.2f", cam_x);
 			
-			/**
-			yb->m_twist.linear.x = 0;
-			//yb->m_twist.linear.y = cam_x * speed;
-			yb->m_twist.linear.y = 0;
-			yb->m_twist.linear.z = 0;
-			
-			yb->m_twist.angular.x = 0;
-			yb->m_twist.angular.y = 0;
-			yb->m_twist.angular.z = -cam_x * speed;
-			*/
+			out_lin_y = pid(cam_x);
 			yb->setTwistToZeroes();
-			yb->m_twist.linear.y = pid(cam_x) * speed;
+			yb->m_twist.linear.y = out_lin_y * speed;
+			ROS_INFO("cam_x = %.2f, out_y = %.2f", cam_x, out_lin_y);
 		} else {
 			yb->setTwistToZeroes();
 			ROS_INFO("nothing");
