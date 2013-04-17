@@ -5,8 +5,37 @@
  * - safe shutdown (send all zero to cmd_vel)
  * - Ref: http://answers.ros.org/question/27655/what-is-the-correct-way-to-do-stuff-before-a-node-is-shutdown/
  * - PID visual control
+ * - make 320x240 as a ROS Parameter
  * 
  */
+ 
+float pid(float error){
+	// PID gains
+	float Kp = 2;
+	float Ki = 0;
+	float Kd = 0;
+	
+	// taken from rate = 50Hz
+	//TODO: is it correct?
+	float dt = 1/50;
+	
+	float integral, derivative;
+	float output = 0;
+	
+	integral = 0;
+	derivative = 0;
+	
+	output = Kp*error + Ki*integral + Kd*derivative;
+	
+	// output limiter
+	if (output > 1)
+		output = 1;
+	else if (output < 0)
+		output = 0;
+		
+	return output;
+}
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "makeitmove");
@@ -27,14 +56,12 @@ int main(int argc, char** argv)
 	
 	while(n.ok() && ros::ok()){
 		if (yb->isObjectDetected()){
-			
-			//TODO: convert camera x y values into youbot's angular speed
-			//TODO: make this 320x240 values into variables or ROS Parameter
 			cam_x = (float)yb->getObjX()/320;
 			cam_y = (float)yb->getObjY()/240;
 			cam_area = (float)yb->getObjArea();
 			ROS_INFO("x = %.2f", cam_x);
 			
+			/**
 			yb->m_twist.linear.x = 0;
 			//yb->m_twist.linear.y = cam_x * speed;
 			yb->m_twist.linear.y = 0;
@@ -43,9 +70,11 @@ int main(int argc, char** argv)
 			yb->m_twist.angular.x = 0;
 			yb->m_twist.angular.y = 0;
 			yb->m_twist.angular.z = -cam_x * speed;
+			*/
+			yb->setTwistToZeroes();
+			yb->m_twist.linear.y = pid(cam_x) * speed;
 		} else {
 			yb->setTwistToZeroes();
-			
 			ROS_INFO("nothing");
 		}
 		
