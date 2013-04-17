@@ -30,8 +30,8 @@ float pid(float error){
 	// output limiter
 	if (output > 1)
 		output = 1;
-	else if (output < 0)
-		output = 0;
+	else if (output < -1)
+		output = -1;
 		
 	return output;
 }
@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 	
 	while(n.ok() && ros::ok()){
 		if (yb->isObjectDetected()){
+			// normalization of x and y values
 			cam_x = (float)yb->getObjX()/320;
 			cam_y = (float)yb->getObjY()/240;
 			cam_area = (float)yb->getObjArea();
