@@ -1,13 +1,23 @@
 #include "youBotIOHandler.h"
+#include <signal.h>
+
 // Ref: http://ibotics.ucsd.edu/trac/stingray/wiki/ROSNodeTutorialC%2B%2B
 /**
  * //TODO:
  * - safe shutdown (send all zero to cmd_vel)
  * - Ref: http://answers.ros.org/question/27655/what-is-the-correct-way-to-do-stuff-before-a-node-is-shutdown/
+ * - Ref: https://code.ros.org/trac/ros/ticket/3417
  * - PID visual control
  * - make 320x240 as a ROS Parameter
  * 
  */
+ 
+ volatile sig_atomic_t g_shutdown_request = 0;
+ 
+ void youBotSafeShutdown(int sig){
+	 g_shutdown_request = 1;
+	 ROS_WARN("Shutdown signal received");
+ }
  
 float pid(float error){
 	// PID gains
@@ -40,6 +50,7 @@ int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "makeitmove");
 	ros::NodeHandle n;
+	signal(SIGINT, youBotSafeShutdown);
 	
 	YouBotIOHandler* yb = new YouBotIOHandler();
 	
@@ -55,7 +66,8 @@ int main(int argc, char** argv)
 	float out_lin_y;
 	float speed = 0.3;
 	
-	while(n.ok() && ros::ok()){
+//	while(n.ok() && ros::ok()){
+	while(!g_shutdown_request){
 		if (yb->isObjectDetected()){
 			// normalization of x and y values
 			cam_x = (float)yb->getObjX()/320;
@@ -78,6 +90,13 @@ int main(int argc, char** argv)
 		
 	}
 	
+	// Shutdown routine
+	ROS_WARN("Stopping the motors..");
+	yb->setTwistToZeroes();
+	yb->publishTwist(&pub_moveit);
+	ros::spinOnce();
+	r.sleep();
+	ros::shutdown();
 	
 	return 0;
 }
