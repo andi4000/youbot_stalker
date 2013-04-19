@@ -1,0 +1,4 @@
+<launch>
+	<node name="colorblobtracking" pkg="youbot_object_tracking" type="colorblobtracking" />
+	<node name="makeitmove" pkg="youbot_object_tracking" type="makeitmove" output="screen" />
+</launch>

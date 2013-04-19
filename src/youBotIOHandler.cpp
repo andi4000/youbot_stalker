@@ -7,21 +7,11 @@ YouBotIOHandler::YouBotIOHandler()
 	m_camPosY = 0;
 	m_camArea = 0;
 	
-	m_twist.linear.x = 0;
-	m_twist.linear.y = 0;
-	m_twist.linear.z = 0;
-	m_twist.angular.x = 0;
-	m_twist.angular.y = 0;
-	m_twist.angular.z = 0;
+	setTwistToZeroes();
 }
 
 YouBotIOHandler::~YouBotIOHandler(){
-	m_twist.linear.x = 0;
-	m_twist.linear.y = 0;
-	m_twist.linear.z = 0;
-	m_twist.angular.x = 0;
-	m_twist.angular.y = 0;
-	m_twist.angular.z = 0;
+	setTwistToZeroes();
 	
 }
 

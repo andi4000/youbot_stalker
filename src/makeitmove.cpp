@@ -4,19 +4,18 @@
 // Ref: http://ibotics.ucsd.edu/trac/stingray/wiki/ROSNodeTutorialC%2B%2B
 /**
  * //TODO:
- * - safe shutdown (send all zero to cmd_vel)
- * - Ref: http://answers.ros.org/question/27655/what-is-the-correct-way-to-do-stuff-before-a-node-is-shutdown/
- * - Ref: https://code.ros.org/trac/ros/ticket/3417
+ * - Try ROS::control_toolbox
  * - PID visual control
- * - make 320x240 as a ROS Parameter
+ * - Put PID gains as arguments in the .launch file
+ * - make safe shutdown routine more neat
  * 
  */
  
  volatile sig_atomic_t g_shutdown_request = 0;
  
  void youBotSafeShutdown(int sig){
-	 g_shutdown_request = 1;
-	 ROS_WARN("Shutdown signal received");
+	g_shutdown_request = 1;
+	ROS_WARN("Shutdown signal received");
  }
  
 float pid(float error){
@@ -50,6 +49,12 @@ int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "makeitmove");
 	ros::NodeHandle n;
+	/**
+	 * Safe Shutdown
+	 * - Ref: http://answers.ros.org/question/27655/what-is-the-correct-way-to-do-stuff-before-a-node-is-shutdown/
+	 * - Ref: https://code.ros.org/trac/ros/ticket/3417
+	 * //Todo: will there be conflict with ROS sigint handler?
+	 */
 	signal(SIGINT, youBotSafeShutdown);
 	
 	YouBotIOHandler* yb = new YouBotIOHandler();
@@ -66,12 +71,16 @@ int main(int argc, char** argv)
 	float out_lin_y;
 	float speed = 0.3;
 	
-//	while(n.ok() && ros::ok()){
-	while(!g_shutdown_request){
+	int captureSizeX, captureSizeY;
+	n.getParam("/object_tracking/captureSizeX", captureSizeX);
+	n.getParam("/object_tracking/captureSizeY", captureSizeY);
+	
+	while(!g_shutdown_request && ros::ok() && n.ok()){
 		if (yb->isObjectDetected()){
 			// normalization of x and y values
-			cam_x = (float)yb->getObjX()/320;
-			cam_y = (float)yb->getObjY()/240;
+			//NOTE: point (0,0) is in the middle of the image
+			cam_x = (float)yb->getObjX() / (captureSizeX/2);
+			cam_y = (float)yb->getObjY() / (captureSizeY/2);
 			cam_area = (float)yb->getObjArea();
 			
 			out_lin_y = pid(cam_x);
@@ -91,12 +100,13 @@ int main(int argc, char** argv)
 	}
 	
 	// Shutdown routine
-	ROS_WARN("Stopping the motors..");
+	ROS_INFO("Stopping the motors . . .");
 	yb->setTwistToZeroes();
 	yb->publishTwist(&pub_moveit);
 	ros::spinOnce();
 	r.sleep();
 	ros::shutdown();
+	ROS_INFO("Bye");
 	
 	return 0;
 }

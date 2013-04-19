@@ -121,6 +121,9 @@ void doGetTheBall(const Mat& matSrc, Mat& out_mat)
 
 int main(int argc, char** argv)
 {
+	int capSizeX = 640;
+	int capSizeY = 480;
+	
 	int camIndex = 0;
 	for (int i = 0; i < 5; i++){
 		VideoCapture tmpCap(i);
@@ -148,7 +151,7 @@ int main(int argc, char** argv)
 	
 	// ROS MESSAGE BEGIN
 	// Ref: http://www.ros.org/wiki/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
-	ros::init(argc, argv, "object_tracking_node");
+	ros::init(argc, argv, "object_tracking");
 	ros::NodeHandle n;
 	ros::Publisher object_detected_pub = n.advertise<std_msgs::Bool>("object_tracking/object_detected", 1000);
 	ros::Publisher x_pos_pub = n.advertise<std_msgs::Int32>("object_tracking/x_pos", 1000);
@@ -157,8 +160,10 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(50);
 	// ROS MESSAGE END
 	
-	int capSizeX = 640;
-	int capSizeY = 480;
+	n.setParam("/object_tracking/captureSizeX", capSizeX);
+	n.setParam("/object_tracking/captureSizeY", capSizeY);
+	
+	
 	
 	if (displayWindows){
 		namedWindow("Output", CV_WINDOW_AUTOSIZE);
