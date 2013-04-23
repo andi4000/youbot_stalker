@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 			
 			out_lin_y = pid(cam_x);
 			yb->setTwistToZeroes();
-			yb->m_twist.linear.y = out_lin_y * speed;
+			yb->m_twist.linear.y = -out_lin_y * speed;
 			ROS_INFO("cam_x = %.2f, out_y = %.2f", cam_x, out_lin_y);
 		} else {
 			yb->setTwistToZeroes();
