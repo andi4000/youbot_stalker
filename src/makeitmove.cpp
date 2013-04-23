@@ -5,10 +5,14 @@
 // Ref: http://ibotics.ucsd.edu/trac/stingray/wiki/ROSNodeTutorialC%2B%2B
 /**
  * //TODO:
- * - Try ROS::control_toolbox
  * - PID visual control
- * - Put PID gains as arguments in the .launch file
+ * - Implementation of PID output scaling: either saturation block or dynamic range compression
  * - make safe shutdown routine more neat
+ * 
+ * //DONE:
+ * - Put PID gains as arguments in the .launch file
+ * - Try ROS::control_toolbox
+ * 
  * 
  */
  
@@ -83,12 +87,25 @@ int main(int argc, char** argv)
 	int captureSizeX, captureSizeY;
 	n.getParam("/object_tracking/captureSizeX", captureSizeX);
 	n.getParam("/object_tracking/captureSizeY", captureSizeY);
+
+	ROS_WARN("PID gain values are taken from the .launch file!");
+	// default PID gains, if no params are set
+	double Kp = 1.2;
+	double Ki = 0.1;
+	double Kd = 0;
+	double iLimitHi = 0.5;
+	double iLimitLo = -0.5;
+	
+	n.getParam("/youbotPID/Kp", Kp);
+	n.getParam("/youbotPID/Ki", Ki);
+	n.getParam("/youbotPID/Kd", Kd);
+	n.getParam("/youbotPID/iLimitHi", iLimitHi);
+	n.getParam("/youbotPID/iLimitLo", iLimitLo);
+	
+	ROS_INFO("Using PID gains: Kp = %.2f; Ki = %.2f; Kd = %.2f; Integral [hi,lo] limits = [%.2f, %.2f]", Kp, Ki, Kd, iLimitHi, iLimitLo);
 	
 	control_toolbox::Pid pid;
-	// initPid(double P, double I, double D, double l1, double l2)
-	// l1 = integral upper limit
-	// l2 = integral lower limit
-	pid.initPid(1.2, 0.1, 0, 0.5, -0.5);
+	pid.initPid(Kp, Ki, Kd, iLimitHi, iLimitLo);
 	ros::Time last_time = ros::Time::now();
 	ros::Time now_time = ros::Time::now();
 	
@@ -103,14 +120,13 @@ int main(int argc, char** argv)
 			//out_lin_y = pid(cam_x);
 			now_time = ros::Time::now();
 			out_lin_y = pid.updatePid(cam_x, now_time - last_time);
+			//ROS_INFO("PID max val = %.2f", pid.updatePid(1, now_time - last_time));
 			last_time = now_time;
 			
 			limiter(&out_lin_y);
 			
-			
 			yb->setTwistToZeroes();
-			
-			yb->m_twist.linear.y = -out_lin_y * speed;
+			yb->m_twist.linear.y = out_lin_y * speed;
 			ROS_INFO("cam_x = %.2f, out_y = %.2f", cam_x, out_lin_y);
 		} else {
 			yb->setTwistToZeroes();
@@ -125,7 +141,7 @@ int main(int argc, char** argv)
 	}
 	
 	// Shutdown routine
-	ROS_INFO("Stopping the motors . . .");
+	ROS_WARN("Stopping the motors . . .");
 	yb->setTwistToZeroes();
 	yb->publishTwist(&pub_moveit);
 	ros::spinOnce();

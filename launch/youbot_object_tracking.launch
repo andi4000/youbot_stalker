@@ -1,4 +1,10 @@
 <launch>
+	<param name="/youbotPID/Kp" value="1.2" type="double" />
+	<param name="/youbotPID/Ki" value="0.1" type="double" />
+	<param name="/youbotPID/Kd" value="0" type="double" />
+	<param name="/youbotPID/iLimitHi" value="0.5" type="double" />
+	<param name="/youbotPID/iLimitLo" value="-0.5" type="double" />
+
 	<node name="colorblobtracking" pkg="youbot_object_tracking" type="colorblobtracking" />
 	<node name="makeitmove" pkg="youbot_object_tracking" type="makeitmove" output="screen" />
 </launch>
