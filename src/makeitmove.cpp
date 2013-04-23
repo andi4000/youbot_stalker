@@ -1,5 +1,6 @@
 #include "youBotIOHandler.h"
 #include <signal.h>
+#include "control_toolbox/pid.h"
 
 // Ref: http://ibotics.ucsd.edu/trac/stingray/wiki/ROSNodeTutorialC%2B%2B
 /**
@@ -18,9 +19,17 @@
 	ROS_WARN("Shutdown signal received");
  }
  
+ void limiter(float* value){
+	if (*value > 1)
+		*value = 1;
+	else if (*value < -1)
+		*value = -1;
+ }
+ 
+ 
 float pid(float error){
 	// PID gains
-	float Kp = 2;
+	float Kp = 1.2;
 	float Ki = 0;
 	float Kd = 0;
 	
@@ -75,6 +84,14 @@ int main(int argc, char** argv)
 	n.getParam("/object_tracking/captureSizeX", captureSizeX);
 	n.getParam("/object_tracking/captureSizeY", captureSizeY);
 	
+	control_toolbox::Pid pid;
+	// initPid(double P, double I, double D, double l1, double l2)
+	// l1 = integral upper limit
+	// l2 = integral lower limit
+	pid.initPid(1.2, 0.1, 0, 0.5, -0.5);
+	ros::Time last_time = ros::Time::now();
+	ros::Time now_time = ros::Time::now();
+	
 	while(!g_shutdown_request && ros::ok() && n.ok()){
 		if (yb->isObjectDetected()){
 			// normalization of x and y values
@@ -83,8 +100,16 @@ int main(int argc, char** argv)
 			cam_y = (float)yb->getObjY() / (captureSizeY/2);
 			cam_area = (float)yb->getObjArea();
 			
-			out_lin_y = pid(cam_x);
+			//out_lin_y = pid(cam_x);
+			now_time = ros::Time::now();
+			out_lin_y = pid.updatePid(cam_x, now_time - last_time);
+			last_time = now_time;
+			
+			limiter(&out_lin_y);
+			
+			
 			yb->setTwistToZeroes();
+			
 			yb->m_twist.linear.y = -out_lin_y * speed;
 			ROS_INFO("cam_x = %.2f, out_y = %.2f", cam_x, out_lin_y);
 		} else {
