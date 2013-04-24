@@ -8,10 +8,12 @@
  * - PID visual control
  * - Implementation of PID output scaling: either saturation block or dynamic range compression
  * - make safe shutdown routine more neat
+ * - make getPIDParameters less nasty
  * 
  * //DONE:
  * - Put PID gains as arguments in the .launch file
  * - Try ROS::control_toolbox
+ * - initialize PIDParam_t with constructor
  * 
  * 
  */
@@ -21,6 +23,65 @@
  void youBotSafeShutdown(int sig){
 	g_shutdown_request = 1;
 	ROS_WARN("Shutdown signal received");
+ }
+ 
+ struct PIDParam_t{
+	double speed;
+	double Kp;
+	double Ki;
+	double Kd;
+	double iLimitHi;
+	double iLimitLo;
+	// Constructor
+	PIDParam_t(){
+		speed = 0;
+		Kp = 0;
+		Ki = 0;
+		Kd = 0;
+		iLimitHi = 0;
+		iLimitLo = 0;
+	}
+ };
+ 
+ void getPIDParameters(char* paramPrefix, PIDParam_t* axis){
+	double tmp;
+	char paramName[33];
+	
+	strcpy(paramName, paramPrefix);
+	strcat(paramName, "/Kp");
+	if (ros::param::get(paramName, tmp))
+		axis->Kp = tmp;
+		
+	strcpy(paramName, paramPrefix);
+	strcat(paramName, "/Ki");
+	if (ros::param::get(paramName, tmp))
+		axis->Ki = tmp;
+	
+	strcpy(paramName, paramPrefix);
+	strcat(paramName, "/Kd");
+	if (ros::param::get(paramName, tmp))
+		axis->Kd = tmp;
+	
+	strcpy(paramName, paramPrefix);
+	strcat(paramName, "/iLimitHi");
+	if (ros::param::get(paramName, tmp))
+		axis->iLimitHi = tmp;
+	
+	strcpy(paramName, paramPrefix);
+	strcat(paramName, "/iLimitLo");
+	if (ros::param::get(paramName, tmp))
+		axis->iLimitLo = tmp;
+	
+	strcpy(paramName, paramPrefix);
+	strcat(paramName, "/speed");
+	if (ros::param::get(paramName, tmp))
+		axis->speed = tmp;
+	
+	ROS_WARN("%s configurations below:", paramPrefix);
+	ROS_WARN("PID gains: [Kp, Ki, Kd] = [%.2f, %.2f, %.2f];", axis->Kp, axis->Ki, axis->Kd);
+	ROS_WARN("Integral [hi,lo] limits = [%.2f, %.2f]", axis->iLimitHi, axis->iLimitLo);
+	ROS_WARN("%d%% speed", (int)(axis->speed*100));
+
  }
  
  void limiter(float* value){
@@ -61,44 +122,27 @@ int main(int argc, char** argv)
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 	
 	float cam_x, cam_y, cam_area;
-	float out_lin_y;
 	
 	int captureSizeX, captureSizeY;
-	n.getParam("/object_tracking/captureSizeX", captureSizeX);
-	n.getParam("/object_tracking/captureSizeY", captureSizeY);
+	ros::param::get("/object_tracking/captureSizeX", captureSizeX);
+	ros::param::get("/object_tracking/captureSizeY", captureSizeY);
 
 	ROS_WARN("PID gain values are taken from the .launch file!");
 
-	double speed = 0.3;
-	// default PID gains, if no params are set
-	double Kp = 1.2;
-	double Ki = 0.1;
-	double Kd = 0;
-	double iLimitHi = 0.5;
-	double iLimitLo = -0.5;
+	PIDParam_t pidParamLinearY;
+	PIDParam_t pidParamAngularZ;
 	
-	double tmp;
+	getPIDParameters("/youbotPID/linear_y", &pidParamLinearY);
+	getPIDParameters("/youbotPID/angular_z", &pidParamAngularZ);
 	
-	if (n.getParam("/youbotPID/Kp", tmp))
-		n.getParam("/youbotPID/Kp", Kp);
-	if (n.getParam("/youbotPID/Ki", tmp))
-		n.getParam("/youbotPID/Ki", Ki);
-	if (n.getParam("/youbotPID/Kd", tmp))
-		n.getParam("/youbotPID/Kd", Kd);
-	if (n.getParam("/youbotPID/iLimitHi", tmp))
-		n.getParam("/youbotPID/iLimitHi", iLimitHi);
-	if (n.getParam("/youbotPID/iLimitLo", tmp))
-		n.getParam("/youbotPID/iLimitLo", iLimitLo);
-	if (n.getParam("/youbotPID/speed", tmp))
-		n.getParam("/youbotPID/speed", speed);
+	control_toolbox::Pid pidLinearY, pidAngularZ;
+	pidLinearY.initPid(pidParamLinearY.Kp, pidParamLinearY.Ki, pidParamLinearY.Kd, pidParamLinearY.iLimitHi, pidParamLinearY.iLimitLo);
+	pidAngularZ.initPid(pidParamAngularZ.Kp, pidParamAngularZ.Ki, pidParamAngularZ.Kd, pidParamAngularZ.iLimitHi, pidParamAngularZ.iLimitLo);
 	
-	ROS_INFO("Using PID gains: [Kp, Ki, Kd] = [%.2f, %.2f, %.2f]; Integral [hi,lo] limits = [%.2f, %.2f]", Kp, Ki, Kd, iLimitHi, iLimitLo);
-	ROS_WARN("Using %d%% speed", (int)(speed*100));
-	
-	control_toolbox::Pid pid;
-	pid.initPid(Kp, Ki, Kd, iLimitHi, iLimitLo);
 	ros::Time last_time = ros::Time::now();
 	ros::Time now_time = ros::Time::now();
+	
+	float out_lin_y, out_ang_z;
 	
 	while(!g_shutdown_request && ros::ok() && n.ok()){
 		if (yb->isObjectDetected()){
@@ -109,14 +153,17 @@ int main(int argc, char** argv)
 			cam_area = (float)yb->getObjArea();
 			
 			now_time = ros::Time::now();
-			out_lin_y = pid.updatePid(cam_x, now_time - last_time);
+			out_lin_y = pidLinearY.updatePid(cam_x, now_time - last_time);
+			out_ang_z = pidAngularZ.updatePid(cam_x, now_time - last_time);
 			last_time = now_time;
 			
 			limiter(&out_lin_y);
+			limiter(&out_ang_z);
 			
 			yb->setTwistToZeroes();
-			yb->m_twist.linear.y = out_lin_y * speed;
-			ROS_INFO("cam_x = %.2f, out_y = %.2f", cam_x, out_lin_y);
+			//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
+			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
+			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f", cam_x, out_lin_y, out_ang_z);
 		} else {
 			yb->setTwistToZeroes();
 			ROS_INFO("nothing");
@@ -130,7 +177,7 @@ int main(int argc, char** argv)
 	}
 	
 	// Shutdown routine
-	ROS_WARN("Stopping the motors . . .");
+	ROS_WARN("Stopping the motors...");
 	yb->setTwistToZeroes();
 	yb->publishTwist(&pub_moveit);
 	ros::spinOnce();
