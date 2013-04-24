@@ -86,7 +86,7 @@
  
  void limiter(float* value){
 	float limitHi = 1;
-	float limitLo = 0.07;
+	float limitLo = 0.01;
 	
 	// limiter so the robot will not blow up
 	if (*value > limitHi)
