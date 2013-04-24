@@ -82,13 +82,14 @@ int main(int argc, char** argv)
 	
 	float cam_x, cam_y, cam_area;
 	float out_lin_y;
-	float speed = 0.3;
 	
 	int captureSizeX, captureSizeY;
 	n.getParam("/object_tracking/captureSizeX", captureSizeX);
 	n.getParam("/object_tracking/captureSizeY", captureSizeY);
 
 	ROS_WARN("PID gain values are taken from the .launch file!");
+
+	double speed = 0.3;
 	// default PID gains, if no params are set
 	double Kp = 1.2;
 	double Ki = 0.1;
@@ -96,13 +97,23 @@ int main(int argc, char** argv)
 	double iLimitHi = 0.5;
 	double iLimitLo = -0.5;
 	
-	n.getParam("/youbotPID/Kp", Kp);
-	n.getParam("/youbotPID/Ki", Ki);
-	n.getParam("/youbotPID/Kd", Kd);
-	n.getParam("/youbotPID/iLimitHi", iLimitHi);
-	n.getParam("/youbotPID/iLimitLo", iLimitLo);
+	double tmp;
 	
-	ROS_INFO("Using PID gains: Kp = %.2f; Ki = %.2f; Kd = %.2f; Integral [hi,lo] limits = [%.2f, %.2f]", Kp, Ki, Kd, iLimitHi, iLimitLo);
+	if (n.getParam("/youbotPID/Kp", tmp))
+		n.getParam("/youbotPID/Kp", Kp);
+	if (n.getParam("/youbotPID/Ki", tmp))
+		n.getParam("/youbotPID/Ki", Ki);
+	if (n.getParam("/youbotPID/Kd", tmp))
+		n.getParam("/youbotPID/Kd", Kd);
+	if (n.getParam("/youbotPID/iLimitHi", tmp))
+		n.getParam("/youbotPID/iLimitHi", iLimitHi);
+	if (n.getParam("/youbotPID/iLimitLo", tmp))
+		n.getParam("/youbotPID/iLimitLo", iLimitLo);
+	if (n.getParam("/youbotPID/speed", tmp))
+		n.getParam("/youbotPID/speed", speed);
+	
+	ROS_INFO("Using PID gains: [Kp, Ki, Kd] = [%.2f, %.2f, %.2f]; Integral [hi,lo] limits = [%.2f, %.2f]", Kp, Ki, Kd, iLimitHi, iLimitLo);
+	ROS_WARN("Using %d%% speed", (int)(speed*100));
 	
 	control_toolbox::Pid pid;
 	pid.initPid(Kp, Ki, Kd, iLimitHi, iLimitLo);
