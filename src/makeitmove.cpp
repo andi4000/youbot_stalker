@@ -157,11 +157,22 @@ int main(int argc, char** argv)
 			cam_area = (float)yb->getObjArea();
 			
 			now_time = ros::Time::now();
-			out_lin_y += pidLinearY.updatePid(cam_x, now_time - last_time);
-			out_ang_z += pidAngularZ.updatePid(cam_x, now_time - last_time);
+			out_lin_y = pidLinearY.updatePid(cam_x, now_time - last_time);
+			out_ang_z = pidAngularZ.updatePid(cam_x, now_time - last_time);
 			last_time = now_time;
-			counter++;
+			
+			
+			limiter(&out_lin_y);
+			limiter(&out_ang_z);
+			//yb->setTwistToZeroes();
+			//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
+			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
+			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f", cam_x, out_lin_y, out_ang_z);
+				
+			//TODO: output averager EPIC FAIL
 			// output averager, might be solution to the stuttering problem (spike in pid output)
+			/**
+			counter++;
 			
 			if (counter == counterLimit) {
 				out_lin_y = out_lin_y / 5;
@@ -178,6 +189,7 @@ int main(int argc, char** argv)
 				out_lin_y = 0;
 				out_ang_z = 0;
 			}
+			*/
 			
 
 		} else {
