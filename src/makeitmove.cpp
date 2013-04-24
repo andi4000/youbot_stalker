@@ -24,10 +24,18 @@
  }
  
  void limiter(float* value){
-	if (*value > 1)
+	float limitHi = 1;
+	float limitLo = 0.05;
+	
+	// limiter so the robot will not blow up
+	if (*value > limitHi)
 		*value = 1;
-	else if (*value < -1)
+	else if (*value < -limitHi)
 		*value = -1;
+	
+	// limiter so the robot will not stutter
+	if (*value < limitLo && *value > -limitLo)
+		*value = 0;
  }
  
  
