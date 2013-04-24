@@ -38,34 +38,6 @@
 		*value = 0;
  }
  
- 
-float pid(float error){
-	// PID gains
-	float Kp = 1.2;
-	float Ki = 0;
-	float Kd = 0;
-	
-	// taken from rate = 50Hz
-	//TODO: is it correct?
-	float dt = 1/50;
-	
-	float integral, derivative;
-	float output = 0;
-	
-	integral = 0;
-	derivative = 0;
-	
-	output = Kp*error + Ki*integral + Kd*derivative;
-	
-	// output limiter
-	if (output > 1)
-		output = 1;
-	else if (output < -1)
-		output = -1;
-		
-	return output;
-}
-
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "makeitmove");
@@ -136,10 +108,8 @@ int main(int argc, char** argv)
 			cam_y = (float)yb->getObjY() / (captureSizeY/2);
 			cam_area = (float)yb->getObjArea();
 			
-			//out_lin_y = pid(cam_x);
 			now_time = ros::Time::now();
 			out_lin_y = pid.updatePid(cam_x, now_time - last_time);
-			//ROS_INFO("PID max val = %.2f", pid.updatePid(1, now_time - last_time));
 			last_time = now_time;
 			
 			limiter(&out_lin_y);
@@ -165,8 +135,8 @@ int main(int argc, char** argv)
 	yb->publishTwist(&pub_moveit);
 	ros::spinOnce();
 	r.sleep();
-	ros::shutdown();
 	ROS_INFO("Bye");
+	ros::shutdown();
 	
 	return 0;
 }
