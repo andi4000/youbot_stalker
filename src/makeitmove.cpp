@@ -142,7 +142,11 @@ int main(int argc, char** argv)
 	ros::Time last_time = ros::Time::now();
 	ros::Time now_time = ros::Time::now();
 	
-	float out_lin_y, out_ang_z;
+	float out_lin_y = 0;
+	float out_ang_z = 0;
+	
+	int counter = 0;
+	int counterLimit = 3;
 	
 	while(!g_shutdown_request && ros::ok() && n.ok()){
 		if (yb->isObjectDetected()){
@@ -153,17 +157,29 @@ int main(int argc, char** argv)
 			cam_area = (float)yb->getObjArea();
 			
 			now_time = ros::Time::now();
-			out_lin_y = pidLinearY.updatePid(cam_x, now_time - last_time);
-			out_ang_z = pidAngularZ.updatePid(cam_x, now_time - last_time);
+			out_lin_y += pidLinearY.updatePid(cam_x, now_time - last_time);
+			out_ang_z += pidAngularZ.updatePid(cam_x, now_time - last_time);
 			last_time = now_time;
+			counter++;
+			// output averager, might be solution to the stuttering problem (spike in pid output)
 			
-			limiter(&out_lin_y);
-			limiter(&out_ang_z);
+			if (counter == counterLimit) {
+				out_lin_y = out_lin_y / 5;
+				out_ang_z = out_ang_z / 5;
+				
+				limiter(&out_lin_y);
+				limiter(&out_ang_z);
+				//yb->setTwistToZeroes();
+				//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
+				yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
+				ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f", cam_x, out_lin_y, out_ang_z);
+				
+				counter = 0;
+				out_lin_y = 0;
+				out_ang_z = 0;
+			}
 			
-			yb->setTwistToZeroes();
-			//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
-			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
-			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f", cam_x, out_lin_y, out_ang_z);
+
 		} else {
 			yb->setTwistToZeroes();
 			ROS_INFO("nothing");
