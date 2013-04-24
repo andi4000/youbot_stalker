@@ -1,9 +1,9 @@
 <launch>
-	<param name="/youbotPID/Kp" value="1.2" type="double" />
-	<param name="/youbotPID/Ki" value="0.1" type="double" />
-	<param name="/youbotPID/Kd" value="0" type="double" />
-	<param name="/youbotPID/iLimitHi" value="0.5" type="double" />
-	<param name="/youbotPID/iLimitLo" value="-0.5" type="double" />
+	<param name="/youbotPID/Kp" value="0.828" type="double" />
+	<param name="/youbotPID/Ki" value="0.2" type="double" />
+	<param name="/youbotPID/Kd" value="0.09" type="double" />
+	<param name="/youbotPID/iLimitHi" value="0.7" type="double" />
+	<param name="/youbotPID/iLimitLo" value="-0.7" type="double" />
 	<param name="/youbotPID/speed" value="0.3" type="double" />
 
 	<node name="colorblobtracking" pkg="youbot_object_tracking" type="colorblobtracking" />
