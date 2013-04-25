@@ -50,30 +50,27 @@
 	char paramName[33];
 	
 	strcpy(paramName, paramPrefix);
-	strcat(paramName, "/Kp");
+	strcat(paramName, "/p");
 	if (ros::param::get(paramName, tmp))
 		axis->Kp = tmp;
 		
 	strcpy(paramName, paramPrefix);
-	strcat(paramName, "/Ki");
+	strcat(paramName, "/i");
 	if (ros::param::get(paramName, tmp))
 		axis->Ki = tmp;
 	
 	strcpy(paramName, paramPrefix);
-	strcat(paramName, "/Kd");
+	strcat(paramName, "/d");
 	if (ros::param::get(paramName, tmp))
 		axis->Kd = tmp;
 	
 	strcpy(paramName, paramPrefix);
-	strcat(paramName, "/iLimitHi");
-	if (ros::param::get(paramName, tmp))
+	strcat(paramName, "/i_clamp");
+	if (ros::param::get(paramName, tmp)){
 		axis->iLimitHi = tmp;
-	
-	strcpy(paramName, paramPrefix);
-	strcat(paramName, "/iLimitLo");
-	if (ros::param::get(paramName, tmp))
-		axis->iLimitLo = tmp;
-	
+		axis->iLimitLo = -tmp;
+	}
+		
 	strcpy(paramName, paramPrefix);
 	strcat(paramName, "/speed");
 	if (ros::param::get(paramName, tmp))
@@ -181,7 +178,7 @@ int main(int argc, char** argv)
 			//yb->setTwistToZeroes();
 			yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
 			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
-			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f, dt = %.2f", cam_x, out_lin_y, out_ang_z, dt.toSec());
+			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f, dt = %.2f, err_dot = %.2f", cam_x, out_lin_y, out_ang_z, dt.toSec(), error_dot);
 			
 		} else {
 			yb->setTwistToZeroes();
