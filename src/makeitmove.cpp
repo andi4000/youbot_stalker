@@ -7,6 +7,9 @@
  * //TODO:
  * - PID visual control
  * - fix derivative kick (sudden output spike due to aggresive derivative), by calculating own dError/dt
+ * - Ref: http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
+ * - IDEA: do Simple Moving Average from the error_dot with last 5 inputs with vector
+ * 
  * - Implementation of PID output scaling: either saturation block or dynamic range compression
  * - make safe shutdown routine more neat
  * - make getPIDParameters less nasty --> use Pid::initParam(const std::string& prefix)
