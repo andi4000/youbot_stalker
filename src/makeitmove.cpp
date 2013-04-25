@@ -6,9 +6,11 @@
 /**
  * //TODO:
  * - PID visual control
+ * - fix derivative kick (sudden output spike due to aggresive derivative), by calculating own dError/dt
  * - Implementation of PID output scaling: either saturation block or dynamic range compression
  * - make safe shutdown routine more neat
- * - make getPIDParameters less nasty
+ * - make getPIDParameters less nasty --> use Pid::initParam(const std::string& prefix)
+ * 
  * 
  * //DONE:
  * - Put PID gains as arguments in the .launch file
@@ -134,13 +136,19 @@ int main(int argc, char** argv)
 	
 	getPIDParameters("/youbotPID/linear_y", &pidParamLinearY);
 	getPIDParameters("/youbotPID/angular_z", &pidParamAngularZ);
-	
 	control_toolbox::Pid pidLinearY, pidAngularZ;
+	
+	
 	pidLinearY.initPid(pidParamLinearY.Kp, pidParamLinearY.Ki, pidParamLinearY.Kd, pidParamLinearY.iLimitHi, pidParamLinearY.iLimitLo);
 	pidAngularZ.initPid(pidParamAngularZ.Kp, pidParamAngularZ.Ki, pidParamAngularZ.Kd, pidParamAngularZ.iLimitHi, pidParamAngularZ.iLimitLo);
 	
 	ros::Time last_time = ros::Time::now();
 	ros::Time now_time = ros::Time::now();
+	ros::Duration dt;
+	
+	float last_error = 0;
+	float now_error = 0;
+	float error_dot = 0;
 	
 	float out_lin_y = 0;
 	float out_ang_z = 0;
@@ -156,42 +164,25 @@ int main(int argc, char** argv)
 			cam_y = (float)yb->getObjY() / (captureSizeY/2);
 			cam_area = (float)yb->getObjArea();
 			
+			// PID begin
 			now_time = ros::Time::now();
-			out_lin_y = pidLinearY.updatePid(cam_x, now_time - last_time);
-			out_ang_z = pidAngularZ.updatePid(cam_x, now_time - last_time);
-			last_time = now_time;
+			now_error = cam_x;
+			dt = now_time - last_time;
+			error_dot = (now_error - last_error) / dt.toSec();
+			out_lin_y = pidLinearY.updatePid(cam_x, error_dot, dt);
+			out_ang_z = pidAngularZ.updatePid(cam_x, error_dot, dt);
 			
+			last_time = now_time;
+			last_error = now_error;
+			// PID end
 			
 			limiter(&out_lin_y);
 			limiter(&out_ang_z);
 			//yb->setTwistToZeroes();
 			yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
 			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
-			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f", cam_x, out_lin_y, out_ang_z);
-				
-			//TODO: output averager EPIC FAIL
-			// output averager, might be solution to the stuttering problem (spike in pid output)
-			/**
-			counter++;
+			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f, dt = %.2f", cam_x, out_lin_y, out_ang_z, dt.toSec());
 			
-			if (counter == counterLimit) {
-				out_lin_y = out_lin_y / 5;
-				out_ang_z = out_ang_z / 5;
-				
-				limiter(&out_lin_y);
-				limiter(&out_ang_z);
-				//yb->setTwistToZeroes();
-				//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
-				yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
-				ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f", cam_x, out_lin_y, out_ang_z);
-				
-				counter = 0;
-				out_lin_y = 0;
-				out_ang_z = 0;
-			}
-			*/
-			
-
 		} else {
 			yb->setTwistToZeroes();
 			ROS_INFO("nothing");
