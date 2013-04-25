@@ -1,17 +1,21 @@
 <launch>
-	<param name="/youbotPID/linear_y/Kp" value="0.7" type="double" />
-	<param name="/youbotPID/linear_y/Ki" value="0" type="double" />
-	<param name="/youbotPID/linear_y/Kd" value="0.09" type="double" />
+	<group if="0">
+	<param name="/youbotPID/linear_y/Kp" value="0.35" type="double" />
+	<param name="/youbotPID/linear_y/Ki" value="0.02" type="double" />
+	<param name="/youbotPID/linear_y/Kd" value="0.018" type="double" />
 	<param name="/youbotPID/linear_y/iLimitHi" value="0.7" type="double" />
 	<param name="/youbotPID/linear_y/iLimitLo" value="-0.7" type="double" />
-	<param name="/youbotPID/linear_y/speed" value="0.4" type="double" />
-	
+	<param name="/youbotPID/linear_y/speed" value="0.8" type="double" />
+	</group>
+
+	<group if="1">
 	<param name="/youbotPID/angular_z/Kp" value="0.40" type="double" />
-	<param name="/youbotPID/angular_z/Ki" value="0.1" type="double" />
-	<param name="/youbotPID/angular_z/Kd" value="0.1" type="double" />
+	<param name="/youbotPID/angular_z/Ki" value="0.2" type="double" />
+	<param name="/youbotPID/angular_z/Kd" value="0.05" type="double" />
 	<param name="/youbotPID/angular_z/iLimitHi" value="0.7" type="double" />
 	<param name="/youbotPID/angular_z/iLimitLo" value="-0.7" type="double" />
 	<param name="/youbotPID/angular_z/speed" value="1" type="double" />
+	</group>
 
 	<node name="colorblobtracking" pkg="youbot_object_tracking" type="colorblobtracking" />
 	<node name="makeitmove" pkg="youbot_object_tracking" type="makeitmove" output="screen" />
