@@ -1,4 +1,5 @@
 #include "youBotIOHandler.h"
+#include "simpleMovingAverage.cpp"
 #include <signal.h>
 #include "control_toolbox/pid.h"
 
@@ -156,6 +157,8 @@ int main(int argc, char** argv)
 	int counter = 0;
 	int counterLimit = 3;
 	
+	SimpleMovingAverage movingAverage;
+	
 	while(!g_shutdown_request && ros::ok() && n.ok()){
 		if (yb->isObjectDetected()){
 			// normalization of x and y values
@@ -169,8 +172,9 @@ int main(int argc, char** argv)
 			now_error = cam_x;
 			dt = now_time - last_time;
 			error_dot = (now_error - last_error) / dt.toSec();
-			out_lin_y = pidLinearY.updatePid(cam_x, error_dot, dt);
-			out_ang_z = pidAngularZ.updatePid(cam_x, error_dot, dt);
+			
+			out_lin_y = pidLinearY.updatePid(cam_x, movingAverage.getAverage(error_dot), dt);
+			out_ang_z = pidAngularZ.updatePid(cam_x, movingAverage.getAverage(error_dot), dt);
 			
 			last_time = now_time;
 			last_error = now_error;

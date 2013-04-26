@@ -33,4 +33,5 @@ rosbuild_add_executable(3dcamtracking src/3dcamtracking.cpp)
 rosbuild_add_executable(makeitmove 
 	src/makeitmove.cpp
 	src/youBotIOHandler.h
-	src/youBotIOHandler.cpp)
+	src/youBotIOHandler.cpp
+	src/simpleMovingAverage.cpp)
