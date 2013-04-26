@@ -34,4 +34,5 @@ rosbuild_add_executable(makeitmove
 	src/makeitmove.cpp
 	src/youBotIOHandler.h
 	src/youBotIOHandler.cpp
+	src/simpleMovingAverage.h
 	src/simpleMovingAverage.cpp)

@@ -1,5 +1,5 @@
 #include "youBotIOHandler.h"
-#include "simpleMovingAverage.cpp"
+#include "simpleMovingAverage.h"
 #include <signal.h>
 #include "control_toolbox/pid.h"
 
@@ -150,6 +150,8 @@ int main(int argc, char** argv)
 	float last_error = 0;
 	float now_error = 0;
 	float error_dot = 0;
+	// hack to surpress derivative kick
+	float error_dot_avg = 0;
 	
 	float out_lin_y = 0;
 	float out_ang_z = 0;
@@ -172,9 +174,10 @@ int main(int argc, char** argv)
 			now_error = cam_x;
 			dt = now_time - last_time;
 			error_dot = (now_error - last_error) / dt.toSec();
+			error_dot_avg = movingAverage.getAverageExceptZero(error_dot);
 			
-			out_lin_y = pidLinearY.updatePid(cam_x, movingAverage.getAverage(error_dot), dt);
-			out_ang_z = pidAngularZ.updatePid(cam_x, movingAverage.getAverage(error_dot), dt);
+			out_lin_y = pidLinearY.updatePid(cam_x, error_dot_avg, dt);
+			out_ang_z = pidAngularZ.updatePid(cam_x, error_dot_avg, dt);
 			
 			last_time = now_time;
 			last_error = now_error;
@@ -185,7 +188,7 @@ int main(int argc, char** argv)
 			//yb->setTwistToZeroes();
 			yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
 			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
-			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.2f, dt = %.2f, err_dot = %.2f", cam_x, out_lin_y, out_ang_z, dt.toSec(), error_dot);
+			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.4f, err_dot = %.3f, err_dot_avg = %.3f", cam_x, out_lin_y, out_ang_z, error_dot, error_dot_avg);
 			
 		} else {
 			yb->setTwistToZeroes();
