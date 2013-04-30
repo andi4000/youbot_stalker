@@ -1,5 +1,6 @@
-Human following Kuka YouBot
-------------------------
+YouBot Stalker
+-------------
 
-Using Asus Xtion Pro Live sensor on ROS Framework
+Human following robot, using Asus Xtion Pro Live sensor on ROS Framework.
+
 
