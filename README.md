@@ -1,1 +1,5 @@
-Simple green object tracking with webcam for KUKA YouBot in ROS Framework.
+Human following Kuka YouBot
+------------------------
+
+Using Asus Xtion Pro Live sensor on ROS Framework
+
