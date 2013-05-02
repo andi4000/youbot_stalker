@@ -7,7 +7,7 @@
  * - Ref: http://answers.ros.org/question/10515/openni_trackertransform-depth/
  * - Ref: http://answers.ros.org/question/35327/accurate-distance-to-kinect-with-openni/
  * - calculate distance --> use translation of torso_1
- * - 
+ * - publish distance and left/right values
  * 
  * - recognise gestures
  * 
