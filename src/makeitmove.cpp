@@ -117,9 +117,9 @@ int main(int argc, char** argv)
 	YouBotIOHandler* yb = new YouBotIOHandler();
 	
 	ros::Subscriber sub_ObjDetect = n.subscribe("object_tracking/object_detected", 1000, &YouBotIOHandler::callbackObjDetected, yb);
-	ros::Subscriber sub_PosX = n.subscribe("object_tracking/x_pos", 1000, &YouBotIOHandler::callbackPosX, yb);
-	ros::Subscriber sub_PosY = n.subscribe("object_tracking/y_pos", 1000, &YouBotIOHandler::callbackPosY, yb);
-	ros::Subscriber sub_area = n.subscribe("object_tracking/area", 1000, &YouBotIOHandler::callbackArea, yb);
+	ros::Subscriber sub_PosX = n.subscribe("object_tracking/cam_x_pos", 1000, &YouBotIOHandler::callbackPosX, yb);
+	ros::Subscriber sub_PosY = n.subscribe("object_tracking/cam_y_pos", 1000, &YouBotIOHandler::callbackPosY, yb);
+	ros::Subscriber sub_area = n.subscribe("object_tracking/distance", 1000, &YouBotIOHandler::callbackArea, yb);
 	ros::Rate r(50);
 	
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);

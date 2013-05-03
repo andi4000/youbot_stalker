@@ -18,7 +18,7 @@ class SimpleMovingAverage
 		// this will give just 0 if the new value is 0
 		float getAverageExceptZero(float newValueWhichCouldBeZero);
 		
-		// for testing
+		// for testing only
 		void printValues();
 	private:
 		vector<float> m_accumulator;

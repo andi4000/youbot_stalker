@@ -154,9 +154,9 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "object_tracking");
 	ros::NodeHandle n;
 	ros::Publisher object_detected_pub = n.advertise<std_msgs::Bool>("object_tracking/object_detected", 1000);
-	ros::Publisher x_pos_pub = n.advertise<std_msgs::Int32>("object_tracking/x_pos", 1000);
-	ros::Publisher y_pos_pub = n.advertise<std_msgs::Int32>("object_tracking/y_pos", 1000);
-	ros::Publisher area_pub = n.advertise<std_msgs::Float32>("object_tracking/area", 1000);
+	ros::Publisher x_pos_pub = n.advertise<std_msgs::Int32>("object_tracking/cam_x_pos", 1000);
+	ros::Publisher y_pos_pub = n.advertise<std_msgs::Int32>("object_tracking/cam_y_pos", 1000);
+	ros::Publisher area_pub = n.advertise<std_msgs::Float32>("object_tracking/distance", 1000);
 	ros::Rate loop_rate(50);
 	// ROS MESSAGE END
 	

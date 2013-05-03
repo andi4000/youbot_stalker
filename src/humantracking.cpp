@@ -1,5 +1,10 @@
 #include "ros/ros.h"
 #include "tf/transform_listener.h"
+#include "simpleMovingAverage.h"
+
+#include "std_msgs/Bool.h"
+#include "std_msgs/Int32.h"
+#include "std_msgs/Float32.h"
 
 /**
  * //TODO:
@@ -8,7 +13,7 @@
  * - Ref: http://answers.ros.org/question/35327/accurate-distance-to-kinect-with-openni/
  * - calculate distance --> use translation of torso_1
  * - publish distance and left/right values
- * 
+ * - make consistent naming conventions for topics and capSizeX etc
  * - recognise gestures
  * 
  */
@@ -19,19 +24,63 @@ int main(int argc, char** argv){
 	ros::NodeHandle node;
 	
 	tf::TransformListener tfListener;
-	ros::Rate rate(10); // 10Hz for now
+	
+	ros::Publisher pub_humanDetected = node.advertise<std_msgs::Bool>("object_tracking/object_detected", 1000);
+	ros::Publisher pub_camX = node.advertise<std_msgs::Int32>("object_tracking/cam_x_pos", 1000);
+	ros::Publisher pub_camY = node.advertise<std_msgs::Int32>("object_tracking/cam_y_pos", 1000);
+	ros::Publisher pub_distance = node.advertise<std_msgs::Float32>("object_tracking/distance", 1000);
+	ros::Rate rate(40); // 10Hz for now
+	
+	int capSizeX = 1000;
+	int capSizeY = 1000;
+	
+	bool isHumanDetected = false;
+	
+	SimpleMovingAverage movingAverage(5);
+	float avgValueOld = 0;
+	float avgValueNew = 0;
+
+	node.setParam("/object_tracking/captureSizeX", capSizeX);
+	node.setParam("/object_tracking/captureSizeY", capSizeY);
 	
 	// Ref: http://www.ros.org/wiki/tf/Tutorials/Writing%20a%20tf%20listener%20%28C%2B%2B%29
 	while(node.ok()){
 		tf::StampedTransform transform;
 		try{
 			tfListener.lookupTransform("/openni_depth_frame", "torso_1", ros::Time(0), transform);
+			avgValueNew = movingAverage.getAverage(transform.getOrigin().x());
+			
+			if (avgValueNew == avgValueOld){
+				isHumanDetected = false;
+				throw tf::TransformException("user_1 lost");
+			} else {
+				isHumanDetected = true;
+			}
+			
+			ROS_INFO("torso_1: [%.4f, %.4f, %.4f]", transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
+			
+			avgValueOld = avgValueNew;
 		}catch(tf::TransformException ex){
 			ROS_ERROR("%s", ex.what());
+			isHumanDetected = false;
 		}
 		
-		ROS_INFO("Translation of torso_1: [%.4f, %.4f, %.4f]", transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
+		// ROS MESSAGE BEGIN
+		std_msgs::Bool msg_humanDetected;
+		std_msgs::Int32 msg_camX, msg_camY;
+		std_msgs::Float32 msg_distance;
 		
+		msg_humanDetected.data = isHumanDetected;
+		msg_camX.data = (int)(transform.getOrigin().y() * capSizeX * 2);
+		msg_camY.data = (int)(transform.getOrigin().z() * capSizeY * 2);
+		msg_distance.data = transform.getOrigin().x() * capSizeX;
+		
+		pub_humanDetected.publish(msg_humanDetected);
+		pub_camX.publish(msg_camX);
+		pub_camY.publish(msg_camY);
+		pub_distance.publish(msg_distance);
+		ros::spinOnce();
+		// ROS MESSAGE END
 		
 		rate.sleep();
 	}

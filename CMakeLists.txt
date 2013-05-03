@@ -29,7 +29,10 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 rosbuild_add_executable(colorblobtracking src/colorblobtracking.cpp)
-rosbuild_add_executable(humantracking src/humantracking.cpp)
+rosbuild_add_executable(humantracking 
+	src/humantracking.cpp
+	src/simpleMovingAverage.h
+	src/simpleMovingAverage.cpp)
 rosbuild_add_executable(makeitmove 
 	src/makeitmove.cpp
 	src/youBotIOHandler.h
