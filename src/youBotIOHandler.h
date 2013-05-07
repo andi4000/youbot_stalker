@@ -20,7 +20,7 @@ class YouBotIOHandler
 		bool isObjectDetected();
 		int getObjX();
 		int getObjY();
-		double getObjArea();
+		double getObjDistance();
 		
 		geometry_msgs::Twist m_twist;
 		void setTwistToZeroes();
@@ -29,5 +29,5 @@ class YouBotIOHandler
 	private:
 		bool m_camObjDetected;
 		int m_camPosX, m_camPosY;
-		double m_camArea;
+		double m_camDistance;
 };

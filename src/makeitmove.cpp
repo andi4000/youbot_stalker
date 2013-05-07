@@ -124,22 +124,28 @@ int main(int argc, char** argv)
 	
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 	
-	float cam_x, cam_y, cam_area;
+	float cam_x, cam_y, cam_distance;
 	
 	int captureSizeX, captureSizeY;
 	ros::param::get("/object_tracking/captureSizeX", captureSizeX);
 	ros::param::get("/object_tracking/captureSizeY", captureSizeY);
-
+	
+	//TODO: param from humantracking doesnt work!
+	captureSizeX = 1000;
+	captureSizeY = 1000;
+	
 	ROS_WARN("PID gain values are taken from the .launch file!");
 
+	PIDParam_t pidParamLinearX;
 	PIDParam_t pidParamLinearY;
 	PIDParam_t pidParamAngularZ;
 	
+	getPIDParameters("/youbotPID/linear_x", &pidParamLinearX);
 	getPIDParameters("/youbotPID/linear_y", &pidParamLinearY);
 	getPIDParameters("/youbotPID/angular_z", &pidParamAngularZ);
-	control_toolbox::Pid pidLinearY, pidAngularZ;
+	control_toolbox::Pid pidLinearX, pidLinearY, pidAngularZ;
 	
-	
+	pidLinearX.initPid(pidParamLinearX.Kp, pidParamLinearX.Ki, pidParamLinearX.Kd, pidParamLinearX.iLimitHi, pidParamLinearX.iLimitLo);
 	pidLinearY.initPid(pidParamLinearY.Kp, pidParamLinearY.Ki, pidParamLinearY.Kd, pidParamLinearY.iLimitHi, pidParamLinearY.iLimitLo);
 	pidAngularZ.initPid(pidParamAngularZ.Kp, pidParamAngularZ.Ki, pidParamAngularZ.Kd, pidParamAngularZ.iLimitHi, pidParamAngularZ.iLimitLo);
 	
@@ -154,6 +160,7 @@ int main(int argc, char** argv)
 	float error_dot_avg = 0;
 	
 	float out_lin_y = 0;
+	float out_lin_x = 0;
 	float out_ang_z = 0;
 	
 	int counter = 0;
@@ -165,9 +172,9 @@ int main(int argc, char** argv)
 		if (yb->isObjectDetected()){
 			// normalization of x and y values
 			//NOTE: point (0,0) is in the middle of the image
-			cam_x = (float)yb->getObjX() / (captureSizeX/2);
-			cam_y = (float)yb->getObjY() / (captureSizeY/2);
-			cam_area = (float)yb->getObjArea();
+			cam_x = (float)yb->getObjX() / (captureSizeX);
+			cam_y = (float)yb->getObjY() / (captureSizeY);
+			cam_distance = (float)yb->getObjDistance();
 			
 			// PID begin
 			now_time = ros::Time::now();
@@ -176,6 +183,8 @@ int main(int argc, char** argv)
 			error_dot = (now_error - last_error) / dt.toSec();
 			error_dot_avg = movingAverage.getAverageExceptZero(error_dot);
 			
+			// distance set point = 1000
+			out_lin_x = - pidLinearX.updatePid((cam_distance - 1000)/1000, dt);
 			out_lin_y = pidLinearY.updatePid(cam_x, error_dot_avg, dt);
 			out_ang_z = pidAngularZ.updatePid(cam_x, error_dot_avg, dt);
 			
@@ -183,12 +192,15 @@ int main(int argc, char** argv)
 			last_error = now_error;
 			// PID end
 			
+			limiter(&out_lin_x);
 			limiter(&out_lin_y);
 			limiter(&out_ang_z);
 			//yb->setTwistToZeroes();
-			yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
-			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
-			ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.4f, err_dot = %.3f, err_dot_avg = %.3f", cam_x, out_lin_y, out_ang_z, error_dot, error_dot_avg);
+			yb->m_twist.linear.x = out_lin_x * pidParamLinearX.speed;
+			//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
+			//yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
+			//ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.4f, err_dot = %.3f, err_dot_avg = %.3f", cam_x, out_lin_y, out_ang_z, error_dot, error_dot_avg);
+			ROS_INFO("x = %.2f, dist = %.2f, out_x = %.2f", cam_x, cam_distance, out_lin_x);
 			
 		} else {
 			yb->setTwistToZeroes();
