@@ -9,8 +9,6 @@
  * - PID visual control
  * - fix derivative kick (sudden output spike due to aggresive derivative), by calculating own dError/dt
  * - Ref: http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
- * - IDEA: do Simple Moving Average from the error_dot with last 5 inputs with vector
- * 
  * - Implementation of PID output scaling: either saturation block or dynamic range compression
  * - make safe shutdown routine more neat
  * - make getPIDParameters less nasty --> use Pid::initParam(const std::string& prefix)
@@ -20,6 +18,7 @@
  * - Put PID gains as arguments in the .launch file
  * - Try ROS::control_toolbox
  * - initialize PIDParam_t with constructor
+ * - IDEA: do Simple Moving Average from the error_dot with last 5 inputs with vector
  * 
  * 
  */
@@ -130,10 +129,6 @@ int main(int argc, char** argv)
 	ros::param::get("/object_tracking/captureSizeX", captureSizeX);
 	ros::param::get("/object_tracking/captureSizeY", captureSizeY);
 	
-	//TODO: param from humantracking doesnt work!
-	captureSizeX = 1000;
-	captureSizeY = 1000;
-	
 	ROS_WARN("PID gain values are taken from the .launch file!");
 
 	PIDParam_t pidParamLinearX;
@@ -183,7 +178,7 @@ int main(int argc, char** argv)
 			error_dot = (now_error - last_error) / dt.toSec();
 			error_dot_avg = movingAverage.getAverageExceptZero(error_dot);
 			
-			// distance set point = 1000
+			// distance set point = 1000 --> too close!
 			out_lin_x = - pidLinearX.updatePid((cam_distance - 1000)/1000, dt);
 			out_lin_y = pidLinearY.updatePid(cam_x, error_dot_avg, dt);
 			out_ang_z = - pidAngularZ.updatePid(cam_x, error_dot_avg, dt);
