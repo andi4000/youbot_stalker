@@ -11,9 +11,26 @@
 	<param name="/youbotPID/linear_x/i" value="0" type="double" />
 	<param name="/youbotPID/linear_x/d" value="0" type="double" />
 	<param name="/youbotPID/linear_x/i_clamp" value="0.7" type="double" />
-	<param name="/youbotPID/linear_x/speed" value="0.1" type="double" />
+	<param name="/youbotPID/linear_x/speed" value="0.6" type="double" />
+	</group>
+	
+	<group if="1">
+	<param name="/youbotPID/linear_y/p" value="1" type="double" />
+	<param name="/youbotPID/linear_y/i" value="0" type="double" />
+	<param name="/youbotPID/linear_y/d" value="0" type="double" />
+	<param name="/youbotPID/linear_y/i_clamp" value="0" type="double" />
+	<param name="/youbotPID/linear_y/speed" value="0.5" type="double" />
 	</group>
 
+	<group if="1">
+	<param name="/youbotPID/angular_z/p" value="1" type="double" />
+	<param name="/youbotPID/angular_z/i" value="0" type="double" />
+	<param name="/youbotPID/angular_z/d" value="0" type="double" />
+	<param name="/youbotPID/angular_z/i_clamp" value="0" type="double" />
+	<param name="/youbotPID/angular_z/speed" value="0.7" type="double" />
+	</group>
+	
+	<!--
 	<group if="0">
 	<param name="/youbotPID/linear_y/p" value="0.35" type="double" />
 	<param name="/youbotPID/linear_y/i" value="0.02" type="double" />
@@ -29,7 +46,7 @@
 	<param name="/youbotPID/angular_z/i_clamp" value="0.7" type="double" />
 	<param name="/youbotPID/angular_z/speed" value="1" type="double" />
 	</group>
-	
+	-->
 	<!--
 	//TODO:
 	- there should be a delay before running the main program
