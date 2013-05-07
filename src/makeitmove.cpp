@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 			// distance set point = 1000
 			out_lin_x = - pidLinearX.updatePid((cam_distance - 1000)/1000, dt);
 			out_lin_y = pidLinearY.updatePid(cam_x, error_dot_avg, dt);
-			out_ang_z = pidAngularZ.updatePid(cam_x, error_dot_avg, dt);
+			out_ang_z = - pidAngularZ.updatePid(cam_x, error_dot_avg, dt);
 			
 			last_time = now_time;
 			last_error = now_error;
