@@ -197,7 +197,7 @@ int main(int argc, char** argv)
 			limiter(&out_ang_z);
 			//yb->setTwistToZeroes();
 			yb->m_twist.linear.x = out_lin_x * pidParamLinearX.speed;
-			yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
+			//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
 			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
 			//ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.4f, err_dot = %.3f, err_dot_avg = %.3f", cam_x, out_lin_y, out_ang_z, error_dot, error_dot_avg);
 			ROS_INFO("x = %.2f, dist = %.2f, out_x = %.2f, out_y = %.2f, out_z = %.2f", cam_x, cam_distance, out_lin_x, out_lin_y, out_ang_z);
