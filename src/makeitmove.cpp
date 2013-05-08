@@ -179,7 +179,7 @@ int main(int argc, char** argv)
 			error_dot_avg = movingAverage.getAverageExceptZero(error_dot);
 			
 			// distance set point = 1000 --> too close!
-			out_lin_x = - pidLinearX.updatePid((cam_distance - 1000)/1000, dt);
+			out_lin_x = - pidLinearX.updatePid((cam_distance - 1500)/1000, dt);
 			out_lin_y = pidLinearY.updatePid(cam_x, error_dot_avg, dt);
 			out_ang_z = - pidAngularZ.updatePid(cam_x, error_dot_avg, dt);
 			
