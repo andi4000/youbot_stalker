@@ -8,13 +8,17 @@
 
 /**
  * //TODO:
+ * - adapt to changing user_ID
+ * - recognise gestures
+ * - 
+ * 
+ * //DONE:
  * - read /tf topic values for human skeleton
  * - Ref: http://answers.ros.org/question/10515/openni_trackertransform-depth/
  * - Ref: http://answers.ros.org/question/35327/accurate-distance-to-kinect-with-openni/
  * - calculate distance --> use translation of torso_1
  * - publish distance and left/right values
  * - make consistent naming conventions for topics and capSizeX etc
- * - recognise gestures
  * 
  */
  
