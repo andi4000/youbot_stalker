@@ -51,17 +51,18 @@ int main(int argc, char** argv){
 	while(node.ok()){
 		tf::StampedTransform transform;
 		try{
-			tfListener.lookupTransform("/openni_depth_frame", "torso_1", ros::Time(0), transform);
+			//tfListener.lookupTransform("/openni_depth_frame", "torso_1", ros::Time(0), transform);
+			tfListener.lookupTransform("/openni_depth_frame", "torso", ros::Time(0), transform);
 			avgValueNew = movingAverage.getAverage(transform.getOrigin().x());
 			
 			if (avgValueNew == avgValueOld){
 				isHumanDetected = false;
-				throw tf::TransformException("user_1 lost");
+				throw tf::TransformException("active user lost");
 			} else {
 				isHumanDetected = true;
 			}
 			
-			ROS_INFO("torso_1: [%.4f, %.4f, %.4f]", transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
+			ROS_INFO("torso: [%.4f, %.4f, %.4f]", transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
 			
 			avgValueOld = avgValueNew;
 		}catch(tf::TransformException ex){
