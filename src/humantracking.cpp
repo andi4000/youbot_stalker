@@ -8,11 +8,11 @@
 
 /**
  * //TODO:
- * - adapt to changing user_ID
  * - recognise gestures
  * - 
  * 
  * //DONE:
+ * - adapt to changing user_ID --> obsolete (23.10.2013)
  * - read /tf topic values for human skeleton
  * - Ref: http://answers.ros.org/question/10515/openni_trackertransform-depth/
  * - Ref: http://answers.ros.org/question/35327/accurate-distance-to-kinect-with-openni/
@@ -38,6 +38,7 @@ int main(int argc, char** argv){
 	int capSizeX = 1000;
 	int capSizeY = 1000;
 	
+	//TODO: obsolete
 	bool isHumanDetected = false;
 	
 	SimpleMovingAverage movingAverage(5);
@@ -55,6 +56,8 @@ int main(int argc, char** argv){
 			tfListener.lookupTransform("/openni_depth_frame", "torso", ros::Time(0), transform);
 			avgValueNew = movingAverage.getAverage(transform.getOrigin().x());
 			
+			//TODO: this is obsolete, replaced by bool value from openni2_user_selection
+			// although this still works fine
 			if (avgValueNew == avgValueOld){
 				isHumanDetected = false;
 				throw tf::TransformException("active user lost");

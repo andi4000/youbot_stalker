@@ -11,7 +11,7 @@
  * - Ref: http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
  * - Implementation of PID output scaling: either saturation block or dynamic range compression
  * - make safe shutdown routine more neat
- * - make getPIDParameters less nasty --> use Pid::initParam(const std::string& prefix)
+ * - make getPIDParameters less nasty --> use Pid::initParam(const std::string& prefix) --> but but, we have extra parameters such as speed and offset
  * 
  * 
  * //DONE:
@@ -78,6 +78,12 @@
 	strcat(paramName, "/speed");
 	if (ros::param::get(paramName, tmp))
 		axis->speed = tmp;
+	
+	/**	
+	strcpy(paramName, paramPrefix);
+	strcat(paramName, "/offset");
+	if (); 
+	*/
 	
 	ROS_WARN("%s configurations below:", paramPrefix);
 	ROS_WARN("PID gains: [Kp, Ki, Kd] = [%.2f, %.2f, %.2f];", axis->Kp, axis->Ki, axis->Kd);
