@@ -23,14 +23,16 @@
  * 
  */
  
- volatile sig_atomic_t g_shutdown_request = 0;
+#define SETPOINT_DISTANCE 1750
+
+volatile sig_atomic_t g_shutdown_request = 0;
  
- void youBotSafeShutdown(int sig){
+void youBotSafeShutdown(int sig){
 	g_shutdown_request = 1;
 	ROS_WARN("Shutdown signal received");
- }
+}
  
- struct PIDParam_t{
+struct PIDParam_t{
 	double speed;
 	double Kp;
 	double Ki;
@@ -46,9 +48,9 @@
 		iLimitHi = 0;
 		iLimitLo = 0;
 	}
- };
+};
  
- void getPIDParameters(char* paramPrefix, PIDParam_t* axis){
+void getPIDParameters(char* paramPrefix, PIDParam_t* axis){
 	double tmp;
 	char paramName[33];
 	
@@ -90,9 +92,9 @@
 	ROS_WARN("Integral [hi,lo] limits = [%.2f, %.2f]", axis->iLimitHi, axis->iLimitLo);
 	ROS_WARN("%d%% speed", (int)(axis->speed*100));
 
- }
+}
  
- void limiter(float* value){
+void limiter(float* value){
 	float limitHi = 1;
 	float limitLo = 0.01;
 	
@@ -105,7 +107,7 @@
 	// limiter so the robot will not stutter
 	if (*value < limitLo && *value > -limitLo)
 		*value = 0;
- }
+}
  
 int main(int argc, char** argv)
 {
@@ -125,6 +127,11 @@ int main(int argc, char** argv)
 	ros::Subscriber sub_PosX = n.subscribe("object_tracking/cam_x_pos", 1000, &YouBotIOHandler::callbackPosX, yb);
 	ros::Subscriber sub_PosY = n.subscribe("object_tracking/cam_y_pos", 1000, &YouBotIOHandler::callbackPosY, yb);
 	ros::Subscriber sub_area = n.subscribe("object_tracking/distance", 1000, &YouBotIOHandler::callbackArea, yb);
+	
+	// from gesture
+	ros::Subscriber sub_robotOffsetX = n.subscribe("/youbotPID/linear_x/offset", 1000, &YouBotIOHandler::callbackOffsetRobotX, yb);
+	ros::Subscriber sub_robotOffsetY = n.subscribe("/youbotPID/linear_y/offset", 1000, &YouBotIOHandler::callbackOffsetRobotY, yb);
+		
 	ros::Rate r(50);
 	
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
@@ -154,43 +161,53 @@ int main(int argc, char** argv)
 	ros::Time now_time = ros::Time::now();
 	ros::Duration dt;
 	
-	float last_error = 0;
-	float now_error = 0;
-	float error_dot = 0;
+	float rob_x_last_error = 0;
+	float rob_x_now_error = 0;
+	float rob_x_error_dot = 0;
 	// hack to surpress derivative kick
-	float error_dot_avg = 0;
+	float rob_x_error_dot_avg = 0;
+
+	float rob_y_last_error = 0;
+	float rob_y_now_error = 0;
+	float rob_y_error_dot = 0;
+	// hack to surpress derivative kick
+	float rob_y_error_dot_avg = 0;
 	
 	float out_lin_y = 0;
 	float out_lin_x = 0;
 	float out_ang_z = 0;
-	
-	int counter = 0;
-	int counterLimit = 3;
-	
-	SimpleMovingAverage movingAverage;
+		
+	SimpleMovingAverage movingAverageX;
+	SimpleMovingAverage movingAverageY;
 	
 	while(!g_shutdown_request && ros::ok() && n.ok()){
 		if (yb->isObjectDetected()){
 			// normalization of x and y values
 			//NOTE: point (0,0) is in the middle of the image
 			cam_x = (float)yb->getObjX() / (captureSizeX);
-			cam_y = (float)yb->getObjY() / (captureSizeY);
+			//cam_y = (float)yb->getObjY() / (captureSizeY);
 			cam_distance = (float)yb->getObjDistance();
 			
 			// PID begin
 			now_time = ros::Time::now();
-			now_error = cam_x;
 			dt = now_time - last_time;
-			error_dot = (now_error - last_error) / dt.toSec();
-			error_dot_avg = movingAverage.getAverageExceptZero(error_dot);
+			
+			rob_x_now_error = cam_x;
+			rob_x_error_dot = (rob_x_now_error - rob_x_last_error) / dt.toSec();
+			rob_x_error_dot_avg = movingAverageX.getAverageExceptZero(rob_x_error_dot);
+			
+			rob_y_now_error = yb->getRobotOffsetY();
+			rob_y_error_dot = (rob_y_now_error - rob_y_last_error) / dt.toSec();
+			rob_y_error_dot_avg = movingAverageY.getAverageExceptZero(rob_y_error_dot);
 			
 			// distance set point = 1000 --> too close!
-			out_lin_x = - pidLinearX.updatePid((cam_distance - 1500)/1000, dt);
-			out_lin_y = pidLinearY.updatePid(cam_x, error_dot_avg, dt);
-			out_ang_z = - pidAngularZ.updatePid(cam_x, error_dot_avg, dt);
+			out_lin_x = - pidLinearX.updatePid((cam_distance - SETPOINT_DISTANCE + 500*yb->getRobotOffsetX())/1000, dt);
+			out_lin_y = - pidLinearY.updatePid(yb->getRobotOffsetY(), rob_y_error_dot_avg, dt);
+			out_ang_z = - pidAngularZ.updatePid(cam_x, rob_x_error_dot_avg, dt);
 			
 			last_time = now_time;
-			last_error = now_error;
+			rob_x_last_error = rob_x_now_error;
+			rob_y_last_error = rob_y_now_error;
 			// PID end
 			
 			limiter(&out_lin_x);
@@ -201,8 +218,7 @@ int main(int argc, char** argv)
 			//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
 			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
 			//ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.4f, err_dot = %.3f, err_dot_avg = %.3f", cam_x, out_lin_y, out_ang_z, error_dot, error_dot_avg);
-			ROS_INFO("x = %.2f, dist = %.2f, out_x = %.2f, out_y = %.2f, out_z = %.2f", cam_x, cam_distance, out_lin_x, out_lin_y, out_ang_z);
-			
+			ROS_INFO("x = %.2f, dist = %.2f, out_x = %.2f, out_y = %.2f, out_z = %.2f, offset_x = %.2f, offset_y = %.2f", cam_x, cam_distance, out_lin_x, out_lin_y, out_ang_z, yb->getRobotOffsetX(), yb->getRobotOffsetY());
 		} else {
 			yb->setTwistToZeroes();
 			ROS_INFO("nothing");

@@ -6,6 +6,8 @@ YouBotIOHandler::YouBotIOHandler()
 	m_camPosX = 0;
 	m_camPosY = 0;
 	m_camDistance = 0;
+	m_robotOffsetX = 0;
+	m_robotOffsetY = 0;
 	
 	setTwistToZeroes();
 }
@@ -28,6 +30,14 @@ void YouBotIOHandler::callbackArea(const std_msgs::Float32::ConstPtr& msg){
 	m_camDistance = msg->data;
 }
 
+void YouBotIOHandler::callbackOffsetRobotX(const std_msgs::Float32::ConstPtr& msg){
+	m_robotOffsetX = msg->data;
+}
+
+void YouBotIOHandler::callbackOffsetRobotY(const std_msgs::Float32::ConstPtr& msg){
+	m_robotOffsetY = msg->data;
+}
+
 bool YouBotIOHandler::isObjectDetected(){
 	return m_camObjDetected;
 }
@@ -37,8 +47,16 @@ int YouBotIOHandler::getObjX(){
 int YouBotIOHandler::getObjY(){
 	return m_camPosY;
 }
-double YouBotIOHandler::getObjDistance(){
+float YouBotIOHandler::getObjDistance(){
 	return m_camDistance;
+}
+
+float YouBotIOHandler::getRobotOffsetX(){
+	return m_robotOffsetX;
+}
+
+float YouBotIOHandler::getRobotOffsetY(){
+	return m_robotOffsetY;
 }
 
 void YouBotIOHandler::setTwistToZeroes(){

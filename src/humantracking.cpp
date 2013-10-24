@@ -79,9 +79,15 @@ int main(int argc, char** argv){
 		std_msgs::Float32 msg_distance;
 		
 		msg_humanDetected.data = isHumanDetected;
+		//TODO: why did i write it wrong like this?
+		/**
 		msg_camX.data = (int)(transform.getOrigin().y() * capSizeX * 2);
 		msg_camY.data = (int)(transform.getOrigin().z() * capSizeY * 2);
 		msg_distance.data = transform.getOrigin().x() * capSizeX;
+		*/
+		msg_camX.data = (int)(transform.getOrigin().x() * capSizeX * 2);
+		msg_camY.data = (int)(transform.getOrigin().y() * capSizeY * 2);
+		msg_distance.data = transform.getOrigin().z() * capSizeX;
 		
 		pub_humanDetected.publish(msg_humanDetected);
 		pub_camX.publish(msg_camX);
