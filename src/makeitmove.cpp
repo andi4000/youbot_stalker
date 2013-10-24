@@ -6,6 +6,8 @@
 // Ref: http://ibotics.ucsd.edu/trac/stingray/wiki/ROSNodeTutorialC%2B%2B
 /**
  * //TODO:
+ * - when gesture active, turn off angular z control
+ * 
  * - PID visual control
  * - fix derivative kick (sudden output spike due to aggresive derivative), by calculating own dError/dt
  * - Ref: http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
@@ -201,7 +203,7 @@ int main(int argc, char** argv)
 			rob_y_error_dot_avg = movingAverageY.getAverageExceptZero(rob_y_error_dot);
 			
 			// distance set point = 1000 --> too close!
-			out_lin_x = - pidLinearX.updatePid((cam_distance - SETPOINT_DISTANCE + 500*yb->getRobotOffsetX())/1000, dt);
+			out_lin_x = - pidLinearX.updatePid((cam_distance - SETPOINT_DISTANCE + 800*yb->getRobotOffsetX())/1000, dt);
 			out_lin_y = - pidLinearY.updatePid(yb->getRobotOffsetY(), rob_y_error_dot_avg, dt);
 			out_ang_z = - pidAngularZ.updatePid(cam_x, rob_x_error_dot_avg, dt);
 			
@@ -215,7 +217,7 @@ int main(int argc, char** argv)
 			limiter(&out_ang_z);
 			//yb->setTwistToZeroes();
 			yb->m_twist.linear.x = out_lin_x * pidParamLinearX.speed;
-			//yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
+			yb->m_twist.linear.y = out_lin_y * pidParamLinearY.speed;
 			yb->m_twist.angular.z = out_ang_z * pidParamAngularZ.speed;
 			//ROS_INFO("cam_x = %.2f, out_y = %.2f, out_z = %.4f, err_dot = %.3f, err_dot_avg = %.3f", cam_x, out_lin_y, out_ang_z, error_dot, error_dot_avg);
 			ROS_INFO("x = %.2f, dist = %.2f, out_x = %.2f, out_y = %.2f, out_z = %.2f, offset_x = %.2f, offset_y = %.2f", cam_x, cam_distance, out_lin_x, out_lin_y, out_ang_z, yb->getRobotOffsetX(), yb->getRobotOffsetY());

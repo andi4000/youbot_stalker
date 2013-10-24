@@ -11,7 +11,7 @@
 	<param name="/youbotPID/linear_x/i" value="0" type="double" />
 	<param name="/youbotPID/linear_x/d" value="0" type="double" />
 	<param name="/youbotPID/linear_x/i_clamp" value="0.7" type="double" />
-	<param name="/youbotPID/linear_x/speed" value="0.4" type="double" />
+	<param name="/youbotPID/linear_x/speed" value="1" type="double" />
 	</group>
 	
 	<group if="1">
@@ -19,7 +19,7 @@
 	<param name="/youbotPID/linear_y/i" value="0" type="double" />
 	<param name="/youbotPID/linear_y/d" value="0" type="double" />
 	<param name="/youbotPID/linear_y/i_clamp" value="0" type="double" />
-	<param name="/youbotPID/linear_y/speed" value="0.5" type="double" />
+	<param name="/youbotPID/linear_y/speed" value="1" type="double" />
 	</group>
 
 	<group if="1">
