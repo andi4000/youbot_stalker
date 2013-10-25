@@ -163,11 +163,11 @@ int main(int argc, char** argv)
 	ros::Time now_time = ros::Time::now();
 	ros::Duration dt;
 	
-	float rob_x_last_error = 0;
-	float rob_x_now_error = 0;
-	float rob_x_error_dot = 0;
+	float rob_z_last_error = 0;
+	float rob_z_now_error = 0;
+	float rob_z_error_dot = 0;
 	// hack to surpress derivative kick
-	float rob_x_error_dot_avg = 0;
+	float rob_z_error_dot_avg = 0;
 
 	float rob_y_last_error = 0;
 	float rob_y_now_error = 0;
@@ -194,9 +194,9 @@ int main(int argc, char** argv)
 			now_time = ros::Time::now();
 			dt = now_time - last_time;
 			
-			rob_x_now_error = cam_x;
-			rob_x_error_dot = (rob_x_now_error - rob_x_last_error) / dt.toSec();
-			rob_x_error_dot_avg = movingAverageX.getAverageExceptZero(rob_x_error_dot);
+			rob_z_now_error = cam_x;
+			rob_z_error_dot = (rob_z_now_error - rob_z_last_error) / dt.toSec();
+			rob_z_error_dot_avg = movingAverageX.getAverageExceptZero(rob_z_error_dot);
 			
 			rob_y_now_error = yb->getRobotOffsetY();
 			rob_y_error_dot = (rob_y_now_error - rob_y_last_error) / dt.toSec();
@@ -205,10 +205,10 @@ int main(int argc, char** argv)
 			// distance set point = 1000 --> too close!
 			out_lin_x = - pidLinearX.updatePid((cam_distance - SETPOINT_DISTANCE + 800*yb->getRobotOffsetX())/1000, dt);
 			out_lin_y = - pidLinearY.updatePid(yb->getRobotOffsetY(), rob_y_error_dot_avg, dt);
-			out_ang_z = - pidAngularZ.updatePid(cam_x, rob_x_error_dot_avg, dt);
+			out_ang_z = - pidAngularZ.updatePid(cam_x, rob_z_error_dot_avg, dt);
 			
 			last_time = now_time;
-			rob_x_last_error = rob_x_now_error;
+			rob_z_last_error = rob_z_now_error;
 			rob_y_last_error = rob_y_now_error;
 			// PID end
 			
