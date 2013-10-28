@@ -29,10 +29,10 @@ int main(int argc, char** argv){
 	
 	tf::TransformListener tfListener;
 	
-	ros::Publisher pub_humanDetected = node.advertise<std_msgs::Bool>("object_tracking/object_detected", 1000);
-	ros::Publisher pub_camX = node.advertise<std_msgs::Int32>("object_tracking/cam_x_pos", 1000);
-	ros::Publisher pub_camY = node.advertise<std_msgs::Int32>("object_tracking/cam_y_pos", 1000);
-	ros::Publisher pub_distance = node.advertise<std_msgs::Float32>("object_tracking/distance", 1000);
+	ros::Publisher pub_humanDetected = node.advertise<std_msgs::Bool>("/youbotStalker/object_tracking/object_detected", 1000);
+	ros::Publisher pub_camX = node.advertise<std_msgs::Int32>("/youbotStalker/object_tracking/cam_x_pos", 1000);
+	ros::Publisher pub_camY = node.advertise<std_msgs::Int32>("/youbotStalker/object_tracking/cam_y_pos", 1000);
+	ros::Publisher pub_distance = node.advertise<std_msgs::Float32>("/youbotStalker/object_tracking/distance", 1000);
 	ros::Rate rate(40); // 10Hz for now
 	
 	int capSizeX = 1000;
@@ -45,8 +45,8 @@ int main(int argc, char** argv){
 	float avgValueOld = 0;
 	float avgValueNew = 0;
 
-	node.setParam("/object_tracking/captureSizeX", capSizeX);
-	node.setParam("/object_tracking/captureSizeY", capSizeY);
+	node.setParam("/youbotStalker/object_tracking/captureSizeX", capSizeX);
+	node.setParam("/youbotStalker/object_tracking/captureSizeY", capSizeY);
 	
 	// Ref: http://www.ros.org/wiki/tf/Tutorials/Writing%20a%20tf%20listener%20%28C%2B%2B%29
 	while(node.ok()){

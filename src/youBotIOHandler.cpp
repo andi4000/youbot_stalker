@@ -8,6 +8,7 @@ YouBotIOHandler::YouBotIOHandler()
 	m_camDistance = 0;
 	m_robotOffsetX = 0;
 	m_robotOffsetY = 0;
+	m_gestureState = 0;
 	
 	setTwistToZeroes();
 }
@@ -38,6 +39,10 @@ void YouBotIOHandler::callbackOffsetRobotY(const std_msgs::Float32::ConstPtr& ms
 	m_robotOffsetY = msg->data;
 }
 
+void YouBotIOHandler::callbackGestureState(const std_msgs::Int32::ConstPtr& msg){
+	m_gestureState = msg->data;
+}
+
 bool YouBotIOHandler::isObjectDetected(){
 	return m_camObjDetected;
 }
@@ -57,6 +62,10 @@ float YouBotIOHandler::getRobotOffsetX(){
 
 float YouBotIOHandler::getRobotOffsetY(){
 	return m_robotOffsetY;
+}
+
+int YouBotIOHandler::getGestureState(){
+	return m_gestureState;
 }
 
 void YouBotIOHandler::setTwistToZeroes(){

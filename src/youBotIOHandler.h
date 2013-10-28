@@ -17,18 +17,22 @@ class YouBotIOHandler
 		void callbackPosY(const std_msgs::Int32::ConstPtr& msg);
 		void callbackArea(const std_msgs::Float32::ConstPtr& msg);
 		
-		//NOTE: added 24.10.2013, needs to be reviewed
+		//TODO: added 24.10.2013, needs to be reviewed
 		// from gesture
 		void callbackOffsetRobotX(const std_msgs::Float32::ConstPtr& msg);
 		void callbackOffsetRobotY(const std_msgs::Float32::ConstPtr& msg);
-		
+		void callbackGestureState(const std_msgs::Int32::ConstPtr& msg);
+
+		// also from gesture
+		float getRobotOffsetX();
+		float getRobotOffsetY();
+		int getGestureState();
+
 		bool isObjectDetected();
 		int getObjX();
 		int getObjY();
 		float getObjDistance();
 		
-		float getRobotOffsetX();
-		float getRobotOffsetY();
 		
 		geometry_msgs::Twist m_twist;
 		void setTwistToZeroes();
@@ -40,4 +44,5 @@ class YouBotIOHandler
 		float m_camDistance;
 		
 		float m_robotOffsetX, m_robotOffsetY;
+		int m_gestureState;
 };

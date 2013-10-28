@@ -3,10 +3,15 @@
 #include <signal.h>
 #include "control_toolbox/pid.h"
 
+//TODO: this is copied from youbot_gesture, make it modular!
+#define GESTURE_INACTIVE 0
+#define GESTURE_ACTIVE_ONE_HAND 1
+#define GESTURE_ACTIVE_TWO_HANDS 2
+
 // Ref: http://ibotics.ucsd.edu/trac/stingray/wiki/ROSNodeTutorialC%2B%2B
 /**
  * //TODO:
- * - when gesture active, turn off angular z control
+ * - when gesture active, turn off angular z control --> needs testing
  * 
  * - PID visual control
  * - fix derivative kick (sudden output spike due to aggresive derivative), by calculating own dError/dt
@@ -125,15 +130,16 @@ int main(int argc, char** argv)
 	
 	YouBotIOHandler* yb = new YouBotIOHandler();
 	
-	ros::Subscriber sub_ObjDetect = n.subscribe("object_tracking/object_detected", 1000, &YouBotIOHandler::callbackObjDetected, yb);
-	ros::Subscriber sub_PosX = n.subscribe("object_tracking/cam_x_pos", 1000, &YouBotIOHandler::callbackPosX, yb);
-	ros::Subscriber sub_PosY = n.subscribe("object_tracking/cam_y_pos", 1000, &YouBotIOHandler::callbackPosY, yb);
-	ros::Subscriber sub_area = n.subscribe("object_tracking/distance", 1000, &YouBotIOHandler::callbackArea, yb);
+	ros::Subscriber sub_ObjDetect = n.subscribe("/youbotStalker/object_tracking/object_detected", 1000, &YouBotIOHandler::callbackObjDetected, yb);
+	ros::Subscriber sub_PosX = n.subscribe("/youbotStalker/object_tracking/cam_x_pos", 1000, &YouBotIOHandler::callbackPosX, yb);
+	ros::Subscriber sub_PosY = n.subscribe("/youbotStalker/object_tracking/cam_y_pos", 1000, &YouBotIOHandler::callbackPosY, yb);
+	ros::Subscriber sub_area = n.subscribe("/youbotStalker/object_tracking/distance", 1000, &YouBotIOHandler::callbackArea, yb);
 	
 	// from gesture
-	ros::Subscriber sub_robotOffsetX = n.subscribe("/youbotPID/linear_x/offset", 1000, &YouBotIOHandler::callbackOffsetRobotX, yb);
-	ros::Subscriber sub_robotOffsetY = n.subscribe("/youbotPID/linear_y/offset", 1000, &YouBotIOHandler::callbackOffsetRobotY, yb);
-		
+	ros::Subscriber sub_robotOffsetX = n.subscribe("/youbotStalker/gesture_processor/offset_linear_x", 1000, &YouBotIOHandler::callbackOffsetRobotX, yb);
+	ros::Subscriber sub_robotOffsetY = n.subscribe("/youbotStalker/gesture_processor/offset_linear_y", 1000, &YouBotIOHandler::callbackOffsetRobotY, yb);
+	ros::Subscriber sub_gestureState = n.subscribe("/youbotStalker/gesture_processor/state", 1000, &YoubotIOHandler::callbackGestureState, yb);
+	
 	ros::Rate r(50);
 	
 	ros::Publisher pub_moveit = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
@@ -141,8 +147,8 @@ int main(int argc, char** argv)
 	float cam_x, cam_y, cam_distance;
 	
 	int captureSizeX, captureSizeY;
-	ros::param::get("/object_tracking/captureSizeX", captureSizeX);
-	ros::param::get("/object_tracking/captureSizeY", captureSizeY);
+	ros::param::get("/youbotStalker/object_tracking/captureSizeX", captureSizeX);
+	ros::param::get("/youbotStalker/object_tracking/captureSizeY", captureSizeY);
 	
 	ROS_WARN("PID gain values are taken from the .launch file!");
 
@@ -150,9 +156,9 @@ int main(int argc, char** argv)
 	PIDParam_t pidParamLinearY;
 	PIDParam_t pidParamAngularZ;
 	
-	getPIDParameters("/youbotPID/linear_x", &pidParamLinearX);
-	getPIDParameters("/youbotPID/linear_y", &pidParamLinearY);
-	getPIDParameters("/youbotPID/angular_z", &pidParamAngularZ);
+	getPIDParameters("/youbotStalker/PID/linear_x", &pidParamLinearX);
+	getPIDParameters("/youbotStalker/PID/linear_y", &pidParamLinearY);
+	getPIDParameters("/youbotStalker/PID/angular_z", &pidParamAngularZ);
 	control_toolbox::Pid pidLinearX, pidLinearY, pidAngularZ;
 	
 	pidLinearX.initPid(pidParamLinearX.Kp, pidParamLinearX.Ki, pidParamLinearX.Kd, pidParamLinearX.iLimitHi, pidParamLinearX.iLimitLo);
@@ -202,10 +208,14 @@ int main(int argc, char** argv)
 			rob_y_error_dot = (rob_y_now_error - rob_y_last_error) / dt.toSec();
 			rob_y_error_dot_avg = movingAverageY.getAverageExceptZero(rob_y_error_dot);
 			
-			// distance set point = 1000 --> too close!
+			//TODO: needs testing
 			out_lin_x = - pidLinearX.updatePid((cam_distance - SETPOINT_DISTANCE + 800*yb->getRobotOffsetX())/1000, dt);
-			out_lin_y = - pidLinearY.updatePid(yb->getRobotOffsetY(), rob_y_error_dot_avg, dt);
-			out_ang_z = - pidAngularZ.updatePid(cam_x, rob_z_error_dot_avg, dt);
+			//TODO: this might be not the final version, since there's a plan to incorporate angular z gesture
+			if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND){
+				out_lin_y = - pidLinearY.updatePid(yb->getRobotOffsetY(), rob_y_error_dot_avg, dt);
+			} else {
+				out_ang_z = - pidAngularZ.updatePid(cam_x, rob_z_error_dot_avg, dt);
+			}
 			
 			last_time = now_time;
 			rob_z_last_error = rob_z_now_error;
