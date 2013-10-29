@@ -215,6 +215,7 @@ int main(int argc, char** argv)
 			if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND){
 				out_lin_y = - pidLinearY.updatePid(yb->getRobotOffsetY(), rob_y_error_dot_avg, dt);
 			} else {
+				out_lin_y = 0;
 				out_ang_z = - pidAngularZ.updatePid(cam_x, rob_z_error_dot_avg, dt);
 			}
 			
