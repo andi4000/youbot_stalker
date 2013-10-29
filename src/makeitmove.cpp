@@ -59,7 +59,8 @@ struct PIDParam_t{
  
 void getPIDParameters(char* paramPrefix, PIDParam_t* axis){
 	double tmp;
-	char paramName[33];
+	//TODO: beware of buffer overflow here!
+	char paramName[60];
 	
 	strcpy(paramName, paramPrefix);
 	strcat(paramName, "/p");
@@ -138,7 +139,7 @@ int main(int argc, char** argv)
 	// from gesture
 	ros::Subscriber sub_robotOffsetX = n.subscribe("/youbotStalker/gesture_processor/offset_linear_x", 1000, &YouBotIOHandler::callbackOffsetRobotX, yb);
 	ros::Subscriber sub_robotOffsetY = n.subscribe("/youbotStalker/gesture_processor/offset_linear_y", 1000, &YouBotIOHandler::callbackOffsetRobotY, yb);
-	ros::Subscriber sub_gestureState = n.subscribe("/youbotStalker/gesture_processor/state", 1000, &YouBotIOHandler::callbackGestureState, yb);
+	//ros::Subscriber sub_gestureState = n.subscribe("/youbotStalker/gesture_processor/state", 1000, &YouBotIOHandler::callbackGestureState, yb);
 	
 	ros::Rate r(50);
 	
