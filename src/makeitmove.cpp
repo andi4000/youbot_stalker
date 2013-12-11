@@ -203,14 +203,11 @@ int main(int argc, char** argv)
 			// from gesture
 			float gestureOffsetX = 0;
 			float gestureOffsetY = 0;
-			float gestureOffsetZ = 0;
-
+			
 			if (yb->getGestureState())
-				gestureOffsetX = 800*yb->getRobotOffsetX();
+				gestureOffsetX = 1000*yb->getRobotOffsetX();
 			if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND)
 				gestureOffsetY = yb->getRobotOffsetY();
-			//if (yb->getGestureState() == GESTURE_ACTIVE_TWO_HANDS)
-			//	gestureOffsetY = yb->getRobotOffsetY();
 			
 			// PID begin
 			now_time = ros::Time::now();
@@ -229,22 +226,8 @@ int main(int argc, char** argv)
 			out_lin_y = pidLinearY.updatePid(SETPOINT_LIN_Y - gestureOffsetY, rob_y_error_dot_avg, dt);
 			out_ang_z = pidAngularZ.updatePid(SETPOINT_ANG_Z - cam_x, rob_z_error_dot_avg, dt);
 			
-			//if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND)
-			//	out_lin_y = 0;
 			if (yb->getGestureState() == GESTURE_ACTIVE_TWO_HANDS)
 				out_ang_z = 0;
-			
-			/**
-			//TODO: needs testing
-			out_lin_x = - pidLinearX.updatePid((cam_distance - SETPOINT_DISTANCE + 800*yb->getRobotOffsetX())/1000, dt);
-			//TODO: this might be not the final version, since there's a plan to incorporate angular z gesture
-			if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND){
-				out_lin_y = - pidLinearY.updatePid(yb->getRobotOffsetY(), rob_y_error_dot_avg, dt);
-			} else {
-				out_lin_y = 0;
-				out_ang_z = - pidAngularZ.updatePid(cam_x, rob_z_error_dot_avg, dt);
-			}
-			*/
 			
 			last_time = now_time;
 			rob_z_last_error = rob_z_now_error;
