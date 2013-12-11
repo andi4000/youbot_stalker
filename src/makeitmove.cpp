@@ -230,7 +230,7 @@ int main(int argc, char** argv)
 			out_ang_z = pidAngularZ.updatePid(SETPOINT_ANG_Z - cam_x + gestureOffsetY, rob_z_error_dot_avg, dt);
 			
 			if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND)
-				out_ang_y = 0;
+				out_lin_y = 0;
 			if (yb->getGestureState() == GESTURE_ACTIVE_TWO_HANDS)
 				out_ang_z = 0;
 			
