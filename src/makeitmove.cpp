@@ -208,9 +208,9 @@ int main(int argc, char** argv)
 			if (yb->getGestureState())
 				gestureOffsetX = 800*yb->getRobotOffsetX();
 			if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND)
-				gestureOffsetZ = yb->getRobotOffsetY();
-			if (yb->getGestureState() == GESTURE_ACTIVE_TWO_HANDS)
 				gestureOffsetY = yb->getRobotOffsetY();
+			//if (yb->getGestureState() == GESTURE_ACTIVE_TWO_HANDS)
+			//	gestureOffsetY = yb->getRobotOffsetY();
 			
 			// PID begin
 			now_time = ros::Time::now();
@@ -225,12 +225,12 @@ int main(int argc, char** argv)
 			rob_y_error_dot_avg = movingAverageY.getAverageExceptZero(rob_y_error_dot);
 			
 			
-			out_lin_x = pidLinearX.updatePid((SETPOINT_DISTANCE - cam_distance + gestureOffsetX)/1000, dt);
-			out_lin_y = pidLinearY.updatePid(SETPOINT_LIN_Y + gestureOffsetY, rob_y_error_dot_avg, dt);
-			out_ang_z = pidAngularZ.updatePid(SETPOINT_ANG_Z - cam_x + gestureOffsetY, rob_z_error_dot_avg, dt);
+			out_lin_x = pidLinearX.updatePid((SETPOINT_DISTANCE - cam_distance - gestureOffsetX)/1000, dt);
+			out_lin_y = pidLinearY.updatePid(SETPOINT_LIN_Y - gestureOffsetY, rob_y_error_dot_avg, dt);
+			out_ang_z = pidAngularZ.updatePid(SETPOINT_ANG_Z - cam_x, rob_z_error_dot_avg, dt);
 			
-			if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND)
-				out_lin_y = 0;
+			//if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND)
+			//	out_lin_y = 0;
 			if (yb->getGestureState() == GESTURE_ACTIVE_TWO_HANDS)
 				out_ang_z = 0;
 			
