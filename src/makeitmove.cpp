@@ -205,10 +205,10 @@ int main(int argc, char** argv)
 			float gestureOffsetX = 0;
 			float gestureOffsetY = 0;
 			
-			if (yb->getGestureState())
+			if (yb->getGestureState()){
 				gestureOffsetX = 1000*yb->getRobotOffsetX();
-			if (yb->getGestureState() == GESTURE_ACTIVE_ONE_HAND)
 				gestureOffsetY = yb->getRobotOffsetY();
+			}
 			
 			// PID begin
 			now_time = ros::Time::now();
