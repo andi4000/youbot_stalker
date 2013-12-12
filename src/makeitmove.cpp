@@ -206,7 +206,7 @@ int main(int argc, char** argv)
 			float gestureOffsetY = 0;
 			
 			if (yb->getGestureState()){
-				gestureOffsetX = 1000*yb->getRobotOffsetX();
+				gestureOffsetX = 1200*yb->getRobotOffsetX();
 				gestureOffsetY = 0.6*yb->getRobotOffsetY();
 			}
 			
