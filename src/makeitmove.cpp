@@ -207,7 +207,7 @@ int main(int argc, char** argv)
 			
 			if (yb->getGestureState()){
 				gestureOffsetX = 1000*yb->getRobotOffsetX();
-				gestureOffsetY = yb->getRobotOffsetY();
+				gestureOffsetY = 0.6*yb->getRobotOffsetY();
 			}
 			
 			// PID begin
