@@ -7,6 +7,7 @@
 #define GESTURE_INACTIVE 0
 #define GESTURE_ACTIVE_ONE_HAND 1
 #define GESTURE_ACTIVE_TWO_HANDS 2
+#define GESTURE_HOLD 3
 
 // Ref: http://ibotics.ucsd.edu/trac/stingray/wiki/ROSNodeTutorialC%2B%2B
 /**
