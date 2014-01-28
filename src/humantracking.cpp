@@ -33,7 +33,7 @@ int main(int argc, char** argv){
 	ros::Publisher pub_camX = node.advertise<std_msgs::Int32>("/youbotStalker/object_tracking/cam_x_pos", 1000);
 	ros::Publisher pub_camY = node.advertise<std_msgs::Int32>("/youbotStalker/object_tracking/cam_y_pos", 1000);
 	ros::Publisher pub_distance = node.advertise<std_msgs::Float32>("/youbotStalker/object_tracking/distance", 1000);
-	ros::Rate rate(40); // 10Hz for now
+	ros::Rate rate(50); // to match other freqs
 	
 	int capSizeX = 1000;
 	int capSizeY = 1000;
