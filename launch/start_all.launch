@@ -1,0 +1,5 @@
+<launch>
+	<node name="run.sh" pkg="openni2_user_selection" type="run.sh" output="screen" />
+	<node name="detector" pkg="youbot_parking_gesture" type="detector" output="log" />
+	<include file="$(find youbot_stalker)/launch/youbot_stalker.launch" />
+</launch>
