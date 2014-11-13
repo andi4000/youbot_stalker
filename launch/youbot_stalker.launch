@@ -52,6 +52,6 @@
 	- there should be a delay before running the main program
 	<node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" />
 	-->
-	<node name="humantracking" pkg="youbot_stalker" type="humantracking" />
-	<node name="makeitmove" pkg="youbot_stalker" type="makeitmove" output="screen" />
+	<node name="humantracking" pkg="youbot_stalker" type="humantracking" output="log" />
+	<node name="makeitmove" pkg="youbot_stalker" type="makeitmove" output="log" />
 </launch>
